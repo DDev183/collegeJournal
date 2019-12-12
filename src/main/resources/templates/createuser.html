@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Serving Web Content</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+<div align="center">
+<form class="createUser" th:action="@{/createUser}" method="post">
+    <div><label>Print your firstname <input type="text" name="firstName"></label></div>
+    <div><label>Print your lastname <input type="text" name="lastName"></label></div>
+    <input type="submit" value="Create user"/>
+</div>
+</form>
+</body>
+</html>
