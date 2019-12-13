@@ -8,8 +8,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import page.danya.service.CustomAuthenticationProvider;
 import page.danya.service.UserService;
 
 @Configuration
@@ -17,7 +19,10 @@ import page.danya.service.UserService;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private UserDetailsService userService;
+    private UserService userService;
+
+    @Autowired
+    private CustomAuthenticationProvider authProvider;
 
 
     @Override
@@ -38,13 +43,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
 
+
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userService);
+//        auth.userDetailsService(userService);
+        auth.authenticationProvider(authProvider);
     }
 
     @Bean
-    public PasswordEncoder getPasswordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

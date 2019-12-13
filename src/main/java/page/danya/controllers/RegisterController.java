@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import page.danya.config.WebSecurityConfig;
 import page.danya.models.APP_User;
 import page.danya.models.Role;
 import page.danya.repository.APP_UserRepository;
+import page.danya.service.UserService;
 
 import java.util.Collections;
 
@@ -14,11 +16,14 @@ import java.util.Collections;
 public class RegisterController {
 
     @Autowired
-    APP_UserRepository userRepository;
+    private APP_UserRepository userRepository;
+
+    @Autowired
+    private WebSecurityConfig webSecurityConfig;
 
     @GetMapping("/registration")
     public String register(Model model){
-        System.out.println("kek");
+        System.out.println("Test");
         model.addAttribute("registerForm", new APP_User());
         return "registration";
     }
@@ -29,7 +34,7 @@ public class RegisterController {
 
 
 //        System.out.println("POSTMAPPING");
-        System.out.println(userData.getFirstname() + "\n" + userData.getLastname() + "\n" + userData.getUsername() + "\n" + userData.getPassword() + "\n" + userData.getEmail() + "\n" + userData.getTelNumber());
+//        System.out.println(userData.getFirstname() + "\n" + userData.getLastname() + "\n" + userData.getUsername() + "\n" + userData.getPassword() + "\n" + userData.getEmail() + "\n" + userData.getTelNumber());
 
 //        if (userRepository.findByUsername(userData.getUsername()).get() != null){
 //            model.addAttribute("message", "User already created!");
@@ -49,7 +54,24 @@ public class RegisterController {
 
         user = userRepository.save(user);
 
+
+
         return "redirect:/login";
+    }
+
+
+//    @PostMapping("/login")
+//    public String login(@ModelAttribute(name = "loginForm") UserService user, Model model){
+//
+//        webSecurityConfig.configure();
+//
+//        return "hello";
+//    }
+
+
+    @GetMapping("/login")
+    public String getLoginPage(Model model){
+        return "login";
     }
 
 }
