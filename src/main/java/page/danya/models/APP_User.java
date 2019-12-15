@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -20,10 +21,13 @@ public class APP_User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-
+    @NotNull
     private String firstname;
+    @NotNull
     private String lastname;
+    @NotNull
     private String password;
+    @NotNull
     private String username;
     private String telNumber;
     private String email;

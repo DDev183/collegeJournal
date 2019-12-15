@@ -1,6 +1,7 @@
 package page.danya.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,7 @@ public class RegisterController {
 
         user.setFirstname(userData.getFirstname());
         user.setLastname(userData.getLastname());
-        user.setPassword(userData.getPassword());
+        user.setPassword(webSecurityConfig.passwordEncoder().encode(userData.getPassword()));
         user.setTelNumber(userData.getTelNumber());
         user.setEmail(userData.getEmail());
         user.setUsername(userData.getUsername());
@@ -58,6 +59,9 @@ public class RegisterController {
 
         return "redirect:/login";
     }
+
+
+
 
 
 //    @PostMapping("/login")
