@@ -7,8 +7,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import page.danya.config.WebSecurityConfig;
 import page.danya.models.APP_User;
+import page.danya.models.Group;
 import page.danya.models.Role;
 import page.danya.repository.APP_UserRepository;
+import page.danya.repository.GroupRepository;
 import page.danya.service.UserService;
 
 import java.util.Collections;
@@ -18,6 +20,9 @@ public class RegisterController {
 
     @Autowired
     private APP_UserRepository userRepository;
+
+    @Autowired
+    private GroupRepository groupRepository;
 
     @Autowired
     private WebSecurityConfig webSecurityConfig;
@@ -50,6 +55,7 @@ public class RegisterController {
         user.setTelNumber(userData.getTelNumber());
         user.setEmail(userData.getEmail());
         user.setUsername(userData.getUsername());
+        user.setGroup(groupRepository.findById(10).get());  //set default value
 
         user.setRoles(Collections.singleton(Role.USER));
 

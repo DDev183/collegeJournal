@@ -5,12 +5,18 @@
     <title>Login form</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-
 </head>
 <body>
-<div th:if="${param.error}">
-    Invalid username and password.
-</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+
+<!--<div th:if="${param.error}">-->
+<!--    Invalid username and password.-->
+<!--</div>-->
 <div th:if="${param.logout}">
     You have been logged out.
 </div>
@@ -18,35 +24,73 @@
 
 
 
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Электронный журнал ККЭП</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="#">Главная<span class="sr-only">/</span></a>
+            <a class="nav-item nav-link" href="/registration">Регистрация</a>
+            <a class="nav-item nav-link active" href="/login">Авторизация</a>
+            <a class="nav-item nav-link" href="/aboutCreator">Об авторе</a>
+            <a class="nav-item nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Расписание</a>
+        </div>
+    </div>
+</nav>
+
+
+<div class="toast" th:if="${param.error}">
+    <div class="toast-header">
+        Toast Header
+    </div>
+    <div class="toast-body">
+        Some text inside the toast body
+    </div>
+</div>
+
+
+<div class="row .animated.fadeInDown">
+    <div class="col-4"></div>
+    <div class="col-4 mt-4 shadow p-3 mb-5 bg-white rounded">
+
+        <p class="mt-1 mb-3 font-weight-light text-primary h2 mx-auto bg-white rounded">Авторизация</p>
+
 <form th:action="@{/login}" method="post">
     <div class="form-group">
-        <label for="exampleInputEmail1">Login</label>
+        <label for="exampleInputEmail1">Логин</label>
         <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" name="username">
     </div>
 
     <div class="form-group">
-        <label for="exampleInputPassword1">Password</label>
+        <label for="exampleInputPassword1">Пароль</label>
         <input type="password" class="form-control" id="exampleInputPassword1" name="password">
     </div>
 
-    <button type="submit" class="btn btn-primary">Submit</button>
+<!--    <div class="shadow-lg p-3 mb-5 bg-white rounded">Larger shadow</div>-->
+
+    <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        Неверный пароль или логин
+    </div>
+
+    <button type="submit" class="btn btn-primary mx-auto">Войти</button>
 
 <!--    <div><label> User Name : <input type="text" name="username"/> </label></div>-->
 <!--    <div><label> Password: <input type="password" name="password"/> </label></div>-->
 <!--    <div><input type="submit" value="Sign In"/></div>-->
 </form>
+<!--    <a href="/registration" class="btn btn-outline-success mt-3" role="button" aria-disabled="true" >Зарегистрироваться</a>-->
+    </div>
+    <div class="col-4"></div>
+</div>
 
-<a href="/registration" class="btn btn-outline-success" tabindex="-1" role="button" aria-disabled="true" >Registration</a>
 
 <!--<button type="button" class="btn btn-outline-success">Success</button>-->
 
 
 
-<!-- Optional JavaScript -->
-<!-- jQuery first, then Popper.js, then Bootstrap JS -->
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
 
 
 </body>

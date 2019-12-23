@@ -15,7 +15,7 @@ import page.danya.repository.APP_UserRepository;
 import java.util.Collections;
 
 @Component
-public class CustomAuthenticationProvider{
+public class CustomAuthenticationProvider implements AuthenticationProvider{
 
     @Autowired
     private UserService userService;
@@ -29,34 +29,33 @@ public class CustomAuthenticationProvider{
     //Custom provider
 
 
-//    @Override
-//    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-//
-//        String username = authentication.getName();
-//        String password = authentication.getCredentials().toString();
-//
-//
-//        APP_User user = userRepository.findByUsername(username).get();
-//        String dbUsername = user.getUsername();
-//        String bdPassword = user.getPassword();
-//
-////        userService.passwordEncoder();
-//
-//
-//        if (dbUsername.equals(username) && bdPassword.equals(password)) {
-//            return new UsernamePasswordAuthenticationToken
-//                    (username, password, Collections.emptyList());
-//        } else {
-//            throw new
-//                    BadCredentialsException("External system authentication failed");
-//        }
-//    }
+    @Override
+    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+
+        String username = authentication.getName();
+        String password = authentication.getCredentials().toString();
 
 
+        APP_User user = userRepository.findByUsername(username).get();
+        String dbUsername = user.getUsername();
+        String bdPassword = user.getPassword();
+
+//        userService.passwordEncoder();
 
 
+        if (dbUsername.equals(username) && bdPassword.equals(password)) {
+            return new UsernamePasswordAuthenticationToken
+                    (username, password, Collections.emptyList());
+        } else {
+            throw new
+                    BadCredentialsException("External system authentication failed");
+        }
+    }
 
-
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return false;
+    }
 
 
 //    @Override

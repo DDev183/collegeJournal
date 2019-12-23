@@ -14,6 +14,7 @@ import java.util.Set;
 import static org.springframework.boot.devtools.restart.AgentReloader.isActive;
 
 @Entity
+@Table(name = "usr")
 public class APP_User implements UserDetails {
 
 
@@ -25,12 +26,15 @@ public class APP_User implements UserDetails {
     private String firstname;
     @NotNull
     private String lastname;
+    private String middlename;
     @NotNull
     private String password;
     @NotNull
     private String username;
     private String telNumber;
     private String email;
+    private boolean banState;
+
 
     public String getEmail() {
         return email;
@@ -77,9 +81,38 @@ public class APP_User implements UserDetails {
 
 
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
+    @CollectionTable(name = "roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
+
+    @ManyToOne(optional=false, cascade=CascadeType.ALL)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    public String getMiddlename() {
+        return middlename;
+    }
+
+    public void setMiddlename(String middlename) {
+        this.middlename = middlename;
+    }
+
+    public boolean isBanState() {
+        return banState;
+    }
+
+    public void setBanState(boolean banState) {
+        this.banState = banState;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
 
     public int getId() {
         return id;
@@ -124,7 +157,7 @@ public class APP_User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isActive();
+        return true;
     }
 
     public void setUsername(String username) {

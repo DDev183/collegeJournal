@@ -23,15 +23,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private UserDetailsService userService;
 
     @Autowired
-    private CustomAuthenticationProvider CustomAuthenticationProvider;
+    private CustomAuthenticationProvider customAuthenticationProvider;
 
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                    .antMatchers("/", "/registration").permitAll()
-                    .anyRequest().authenticated()
+                    .antMatchers("/", "/registration", "/admin", "/admin/createGroup", "/admin/addStudentToGroup").permitAll()
+                .anyRequest().authenticated()
                 .and()
                     .formLogin()
                     .loginPage("/login")
@@ -49,6 +49,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 //        auth.userDetailsService(userService);
+//        auth.authenticationProvider(customAuthenticationProvider);
         auth.authenticationProvider(authProvider());
 
     }

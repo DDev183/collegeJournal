@@ -3,7 +3,7 @@ package page.danya.models;
 import org.springframework.security.core.GrantedAuthority;
 
 public enum Role implements GrantedAuthority {
-    USER;
+    USER, TEACHER, ADMIN;
 
     @Override
     public String getAuthority() {

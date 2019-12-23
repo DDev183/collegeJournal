@@ -126,5 +126,10 @@ public class MainController {
 //        return "info";
 //    }
 
+    @GetMapping("/admin")
+    public String getAdminPage(Model model){
+        return "admin";
+    }
+
 
 }
