@@ -47,26 +47,33 @@ public class AdminController {
 
 
     @GetMapping("/admin/addStudentToGroup")
-    public String getAddStudentToGroup(String lastname, Model model){
+    public String getAddStudentToGroup(String lastname, String firstname, Model model){
 
-        model.addAttribute("firstname", lastname);
+        model.addAttribute("lastname", lastname);
+        model.addAttribute("firstname", firstname);
 
         return "admin/addStudentToGroup";
 
     }
 
     @PostMapping("/admin/addStudentToGroup")
-    public String findAddStudentToGroup(@ModelAttribute(name = "findStudent") String lastname, Model model){
+    public String findAddStudentToGroup(@RequestParam String firstname, @RequestParam String lastname, Model model){
 
-//        Optional<APP_User> user = userRepository.findByUsername(lastname);
-//        APP_User userInfo = user.get();
-//
-//        List<Group> groups = groupRepository.findAll();
-//        model.addAttribute("firstname", userInfo.getFirstname());
-//        model.addAttribute("lastname", userInfo.getLastname());
-//        model.addAttribute("middlename", userInfo.getMiddlename());
-//
-//        model.addAttribute("groups", groups);
+
+        Optional<APP_User> user = userRepository.findByFirstnameAndLastname(firstname, lastname);
+        APP_User userInfo = user.get();
+
+        System.out.println(userInfo.toString());
+        System.out.println(userInfo.getGroup().getName());
+
+
+        List<Group> groups = groupRepository.findAll();
+        model.addAttribute("id", userInfo.getId());
+        model.addAttribute("firstname", userInfo.getFirstname());
+        model.addAttribute("lastname", userInfo.getLastname());
+        model.addAttribute("middlename", userInfo.getMiddlename());
+
+        model.addAttribute("groups", groups);
 
 
 
@@ -75,12 +82,13 @@ public class AdminController {
 
 
 
-//    @PostMapping("/admin/addStudentToGroup")
-//    public String AddStudentToGroup(@ModelAttribute(name = "addStudentToGroup") String lastname, Model model){
-//
-//
-//        return "/admin";
-//    }
+    @PostMapping("/admin/addStudentToGroup/link")
+    public String addStudentToGroup(@RequestParam int id, Model model){
+
+        System.out.println("EKEKEKEKEKEKEKEKE");
+
+        return "/admin";
+    }
 
 
 

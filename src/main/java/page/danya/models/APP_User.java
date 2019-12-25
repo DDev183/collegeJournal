@@ -179,4 +179,16 @@ public class APP_User implements UserDetails {
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
+
+
+    @Override
+    public String toString() {
+        return "APP_User{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", username='" + username + '\'' +
+                ", group=" + group +
+                '}';
+    }
 }

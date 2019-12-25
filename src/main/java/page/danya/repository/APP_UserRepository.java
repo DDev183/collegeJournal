@@ -14,6 +14,8 @@ public interface APP_UserRepository extends JpaRepository<APP_User, Integer> {
 
     Optional<APP_User> findByUsername(String username);
 
+    Optional<APP_User> findByFirstnameAndLastname(String firstname, String lastname);
+
 
 
 
