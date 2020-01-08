@@ -55,6 +55,7 @@ public class APP_User implements UserDetails {
     public APP_User(String firstname, String lastname, String password, String username, String telNumber, String email) {
         this.firstname = firstname;
         this.lastname = lastname;
+        this.middlename = lastname;       //WARNING!!!
         this.password = password;
         this.username = username;
         this.telNumber = telNumber;
@@ -86,8 +87,15 @@ public class APP_User implements UserDetails {
     private Set<Role> roles;
 
     @ManyToOne(optional=false, cascade=CascadeType.ALL)
-    @JoinColumn(name = "group_id")
+    @JoinColumn(name = "user_id")
     private Group group;
+
+
+//
+//    @OneToMany(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "user_id")
+//    private Collection<Teaching> teachings;
+//
 
     public String getMiddlename() {
         return middlename;

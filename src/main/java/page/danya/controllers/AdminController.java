@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import page.danya.models.APP_User;
 import page.danya.models.Group;
@@ -68,6 +65,8 @@ public class AdminController {
 
 
         List<Group> groups = groupRepository.findAll();
+
+        model.addAttribute("user", userInfo);
         model.addAttribute("id", userInfo.getId());
         model.addAttribute("firstname", userInfo.getFirstname());
         model.addAttribute("lastname", userInfo.getLastname());
@@ -83,11 +82,27 @@ public class AdminController {
 
 
     @PostMapping("/admin/addStudentToGroup/link")
-    public String addStudentToGroup(@RequestParam int id, Model model){
+    public String addStudentToGroup(@RequestParam(name = "groupid") int groupid, @RequestParam(name = "id") int id, Model model){
 
+
+        System.out.println("User id: " + id);
+        System.out.println("Group id: " + groupid);
         System.out.println("EKEKEKEKEKEKEKEKE");
 
-        return "/admin";
+        Group group = groupRepository.findById(groupid).get();
+
+        APP_User user = userRepository.findById(id).get();
+        user.setGroup(group);
+
+        userRepository.save(user);
+
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/admin/createSubject")
+    public String createSubject(Model model){
+
+        return "/admin/createSubject";
     }
 
 

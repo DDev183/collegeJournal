@@ -13,8 +13,13 @@ public class Group {
     private String name;
 
     @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id")
     private Collection<APP_User> user;
 
+//    @OneToMany(fetch = FetchType.EAGER)
+//    @JoinColumn(name = "group_id")
+//    private Collection<Teaching> teaching;
+//
 
 
     public Group() {

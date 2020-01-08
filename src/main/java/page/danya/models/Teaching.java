@@ -1,9 +1,7 @@
 package page.danya.models;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.Collection;
 
 @Entity
 public class Teaching {
@@ -12,7 +10,21 @@ public class Teaching {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-//    private int group_id;
-//    private int sub_id;
-//    private int teacher_id;
+//    @ManyToOne(optional = false, cascade=CascadeType.ALL)
+//    @JoinColumn(name = "group_id")
+//    private Group group;
+
+//    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+//    private Subject subject;
+//
+//    @OneToMany
+//    private Collection<Mark> marks;
+//
+
+    //    private int teacher_id;
+//    @ManyToOne(optional = true, cascade = CascadeType.ALL)
+//    @JoinColumn(name = "teacher_id")
+//    private APP_User teacher;
+
+
 }

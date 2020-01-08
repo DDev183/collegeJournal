@@ -38,6 +38,17 @@ public class RegisterController {
     public String addUser(@ModelAttribute(name = "registerForm") APP_User userData, Model model){
 
 
+        // Checking...
+
+        if (groupRepository.findById(1).isPresent() == false){
+            Group group = new Group();
+            group.setId(1);
+            group.setName("Default group");
+
+            group = groupRepository.save(group);
+        }
+
+
 
 //        System.out.println("POSTMAPPING");
 //        System.out.println(userData.getFirstname() + "\n" + userData.getLastname() + "\n" + userData.getUsername() + "\n" + userData.getPassword() + "\n" + userData.getEmail() + "\n" + userData.getTelNumber());
@@ -49,13 +60,15 @@ public class RegisterController {
 
         APP_User user = new APP_User();
 
+
         user.setFirstname(userData.getFirstname());
         user.setLastname(userData.getLastname());
+        user.setMiddlename(userData.getMiddlename());
         user.setPassword(webSecurityConfig.passwordEncoder().encode(userData.getPassword()));
         user.setTelNumber(userData.getTelNumber());
         user.setEmail(userData.getEmail());
         user.setUsername(userData.getUsername());
-        user.setGroup(groupRepository.findById(10).get());  //set default value
+        user.setGroup(groupRepository.findById(1).get());  //set default value
 
         user.setRoles(Collections.singleton(Role.USER));
 
