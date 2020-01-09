@@ -91,6 +91,8 @@ public class APP_User implements UserDetails {
     private Group group;
 
 
+
+
 //
 //    @OneToMany(cascade = CascadeType.ALL)
 //    @JoinColumn(name = "user_id")
