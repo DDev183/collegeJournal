@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -81,14 +82,14 @@ public class APP_User implements UserDetails {
 
 
 
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "roles", joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
-    private Set<Role> roles;
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private Collection<Role> roles;
 
-    @ManyToOne(optional=false, cascade=CascadeType.ALL)
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id")
     private Group group;
+
+
 
 
 
@@ -182,11 +183,11 @@ public class APP_User implements UserDetails {
         this.telNumber = telNumber;
     }
 
-    public Set<Role> getRoles() {
-        return roles;
+    public Collection<Role> getRoles() {
+        return (Collection<Role>) roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Collection<Role> roles) {
         this.roles = roles;
     }
 
@@ -199,6 +200,7 @@ public class APP_User implements UserDetails {
                 ", lastname='" + lastname + '\'' +
                 ", username='" + username + '\'' +
                 ", group=" + group +
+                ", role=" + roles +
                 '}';
     }
 }

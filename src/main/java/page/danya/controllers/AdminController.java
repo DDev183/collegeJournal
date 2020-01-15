@@ -1,6 +1,5 @@
 package page.danya.controllers;
 
-import org.hibernate.validator.constraints.CodePointLength;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,9 +12,7 @@ import page.danya.repository.APP_UserRepository;
 import page.danya.repository.GroupRepository;
 import page.danya.repository.SubjectRepository;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class AdminController {
@@ -160,7 +157,10 @@ public class AdminController {
         model.addAttribute("lastname", user.getLastname());
         model.addAttribute("middlename", user.getMiddlename());
 
-        List<Role> roles = Arrays.asList(Role.values());
+        List<String> roles = new LinkedList<>();
+        roles.add("USER");
+        roles.add("TEACHER");
+        roles.add("ADMIN");
 
         model.addAttribute("roles", roles);
 
@@ -169,16 +169,24 @@ public class AdminController {
 
 
     @PostMapping("admin/changeRole/change")
-    public String changingRole(@ModelAttribute(name = "rolevalue") Role role, @RequestParam(name = "id") int id, Model model){
+    public String changingRole(@ModelAttribute(name = "rolevalue") Role roles, @RequestParam(name = "id") int id, Model model){
 
-        System.out.println("Role: " + role.toString());
+        System.out.println("Role: " + roles.toString());
         System.out.println("Id: " + id);
 
         APP_User user = userRepository.findById(id).get();
 
-//        roleRepository.flushRoleById(id, role);
 
-//        userRepository.updateRoleById(role, id);
+        System.out.println(user.toString());
+
+//        user.setRoles(Collections.singleton(Role.USER));
+
+        user.setRoles(Collections.singleton(new Role("ADMIN")));
+
+        userRepository.save(user);
+
+        System.out.println(user.toString());
+
 
         return "/admin";
     }
