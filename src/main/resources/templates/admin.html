@@ -40,6 +40,21 @@
 </nav>
 
 
+<div class="container">
+    <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-12">
+            <div class="jumbotron mt-2">
+                <div class="container">
+                    <h1 class="display-4">Здравствуй #Admin/Danya</h1>
+                    <p class="lead">Это панель создана для управление электронным журналом Краснодарского колледжа электронного приборостоения</p>
+                </div>
+            </div>
+        <div class="col-sm-1"></div>
+    </div>
+</div>
+</div>
+
 
 
 <div class="row justify-content-center">
@@ -85,7 +100,15 @@
             <li class="nav-item">
                 <a class="nav-link" href="/admin/changeRole">Изменить роль</a>
                 <a class="nav-link" href="/admin/banUser">Заблокировать пользователя</a>
-                <a class="nav-link" href="/admin/changerUserInfo">Изменить данные пользователя</a>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Изменить данные пользователя
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item font-weight-light" href="/admin/changerUserInfoByLogin">Поиск по логину</a>
+                    <a class="dropdown-item font-weight-light" href="/admin/changerUserInfoByFIO">Поиск по ФИО</a>
+                </div>
+            </li>
             </li>
         </ul>
     </div>

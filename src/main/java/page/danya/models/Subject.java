@@ -1,19 +1,27 @@
 package page.danya.models;
 
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
+@Indexed
 public class Subject {
+
+    @Field
+    private int memory;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
     private String name;
+
+    @OneToMany(mappedBy = "subject")
+    private List<Teaching> teachings;
 
     public Subject(){
     }

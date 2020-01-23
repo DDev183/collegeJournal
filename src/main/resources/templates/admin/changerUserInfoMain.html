@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <title>Панель администратора</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+</head>
+<body>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+
+
+<!--<div th:if="${param.error}">-->
+<!--    Invalid username and password.-->
+<!--</div>-->
+<!--<div th:if="${param.logout}">-->
+<!--    You have been logged out.-->
+<!--</div>-->
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Электронный журнал ККЭП</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/">Главная<span class="sr-only">/</span></a>
+            <a class="nav-item nav-link active" href="/admin">Панель</a>
+            <a class="nav-item nav-link" href="/logout">Выход</a>
+            <a class="nav-item nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Расписание</a>
+        </div>
+    </div>
+</nav>
+
+
+
+<div class="row justify-content-center">
+
+
+
+    <div class="col-6 mt-4 shadow p-3 mb-5 ml-3 mr-3 bg-white rounded">
+
+        <p class="mt-1 mb-1 font-weight-light text-primary h2 mx-auto bg-white rounded">Информация</p>
+
+            <form class="needs-validation" th:action="@{/admin/changerUserInfoMain/confirm}" th:object="${user}" method="post" modelAttribute="changeUserInfo" novalidate>
+                <div class="form-row">
+                    <div class="col-md-4 mb-3">
+                        <label for="validationCustom01">Фамилия</label>
+                        <input type="text" class="form-control" id="validationCustom01" placeholder="Фамилия" th:value="*{lastname}" name="lastname" required>
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="validationCustom02">Имя</label>
+                        <input type="text" class="form-control" id="validationCustom02" placeholder="firstname" th:value="*{firstname}" name="firstname" required>
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="validationCustom02">Отчество</label>
+                        <input class="form-control" type="text" th:value="*{middlename}" id="middlename" name="middlename" />
+<!--                        <input type="text" class="form-control" id="validationCustom10" placeholder="meddiumname" value="${user.meddiumname}" name="meddiumname" required>-->
+                        <div class="valid-feedback">
+                            Looks good!
+                        </div>
+                    </div>
+                </div>
+
+
+
+                    <div class="form-row">
+                        <div class="col-md-6 mb-3">
+                            <label for="validationCustom03">Логин</label>
+                            <input type="text" class="form-control" id="validationCustom13" th:value="*{username}" name="username" placeholder="username" required>
+                            <div class="invalid-feedback">
+                                Please provide a valid city.
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>Пароль</label>
+                            <input type="text" class="form-control" id="validationCustom15" name="password" placeholder="password">
+                        </div>
+                        <div class="col-md-3">
+                            <label></label>
+                            <p class="font-weight-light h5">Возможна только смена пароля</p>
+                        </div>
+                    </div>
+
+
+
+                <div class="form-row">
+                    <div class="col-md-6 mb-3">
+                        <label for="validationCustom03">Номер телефона</label>
+                        <input type="text" class="form-control" id="validationCustom03" th:value="*{telnumber}" name="telnumber" placeholder="telnumber" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid city.
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="validationCustom05">E-mail</label>
+                        <input type="text" class="form-control" id="validationCustom05" th:value="*{email}" name="email" placeholder="email" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid zip.
+                        </div>
+                    </div>
+                </div>
+<!--                <div class="form-group">-->
+<!--                    <div class="form-check">-->
+<!--                        <input class="form-check-input" type="checkbox" value="" id="invalidCheck" required>-->
+<!--                        <label class="form-check-label" for="invalidCheck">-->
+<!--                            Agree to terms and conditions-->
+<!--                        </label>-->
+<!--                        <div class="invalid-feedback">-->
+<!--                            You must agree before submitting.-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+
+                <!--                             HIDDEN!!!!!                               -->
+                <input type="hidden" name="id" th:value="*{id}">
+
+                <dl class="row ml-1 mb-4">
+
+                    <h5 class="font-italic">
+                        Id:
+                        <small class="text-muted" th:text="*{id}"></small>
+                    </h5>
+                </dl>
+                <dl class="row ml-1 mb-4">
+                    <h5 class="font-italic">
+                        Группа:
+                        <small class="text-muted" th:text="*{group.name}"></small>
+                    </h5>
+                </dl>
+                <dl class="row ml-1 mb-4">
+                    <h5 class="font-italic">
+                        Роль:
+                        <small class="text-muted" th:text="*{role.name}"></small>
+                    </h5>
+                </dl>
+<!--                <dl class="row ml-1 mb-4">-->
+<!--                    <h5 class="font-italic">-->
+<!--                        Статус блокировки:-->
+<!--                        <small class="text-muted" th:text="*{banState}"></small>-->
+<!--                    </h5>-->
+<!--                </dl>-->
+
+                <button class="btn btn-primary" type="submit">Сохранить</button>
+            </form>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+<!--<table class="table table-bordered">-->
+<!--    <thead>-->
+<!--    <tr>-->
+<!--        <th>ID</th>-->
+<!--        <th>Name</th>-->
+<!--    </tr>-->
+<!--    </thead>-->
+<!--    <tbody>-->
+<!--    <tr th:each="group : ${groups}">-->
+<!--        <td th:text="${group.id}"></td>-->
+<!--        <td th:text="${group.name}"></td>-->
+<!--    </tr>-->
+<!--    </tbody>-->
+<!--</table>-->
+
+
+
+</body>
+</html>

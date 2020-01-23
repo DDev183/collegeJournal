@@ -4,13 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import page.danya.models.APP_User;
-import page.danya.models.Group;
-import page.danya.models.Role;
-import page.danya.models.Subject;
-import page.danya.repository.APP_UserRepository;
-import page.danya.repository.GroupRepository;
-import page.danya.repository.SubjectRepository;
+import page.danya.config.WebSecurityConfig;
+import page.danya.models.*;
+import page.danya.repository.*;
 
 import java.util.*;
 
@@ -26,8 +22,23 @@ public class AdminController {
     @Autowired
     private SubjectRepository subjectRepository;
 
-//    @Autowired
-//    private RoleRepository roleRepository;
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private TeachingRepository teachingRepository;
+
+    @Autowired
+    private WebSecurityConfig webSecurityConfig;
+
+
+
+    //CONSTANTs
+
+    final static String BAN_TEXT = "Блокировка";
+    final static String UNBAN_TEXT = "Разблокировка";
+
+
 
 
     @GetMapping("/admin/createGroup")
@@ -169,10 +180,10 @@ public class AdminController {
 
 
     @PostMapping("admin/changeRole/change")
-    public String changingRole(@ModelAttribute(name = "rolevalue") Role roles, @RequestParam(name = "id") int id, Model model){
+    public String changingRole(@ModelAttribute(name = "rolevalue") String roles, @RequestParam(name = "id") int id, Model model){
 
-        System.out.println("Role: " + roles.toString());
-        System.out.println("Id: " + id);
+        System.out.println("Role: " + roles);
+        System.out.println("User id: " + id);
 
         APP_User user = userRepository.findById(id).get();
 
@@ -181,7 +192,10 @@ public class AdminController {
 
 //        user.setRoles(Collections.singleton(Role.USER));
 
-        user.setRoles(Collections.singleton(new Role("ADMIN")));
+        String roleString = "ROLE_" + roles;
+
+        Role role = roleRepository.findByName(roleString);
+        user.setRole(role);
 
         userRepository.save(user);
 
@@ -191,6 +205,173 @@ public class AdminController {
         return "/admin";
     }
 
+
+    @GetMapping("/admin/subjectLinking")
+    public String getSubjectLinkingPage(String groupNumber, String subjectName, Model model){
+
+        model.addAttribute("groupNumber", groupNumber);
+        model.addAttribute("subjectName", subjectName);
+
+        return "/admin/subjectLinking";
+    }
+
+    @PostMapping("/admin/subjectLinking")
+    public String subjectLinkingPage(@RequestParam String groupNumber, String subjectName, Model model){
+
+        Group group = groupRepository.findByName(groupNumber).get();
+
+        List<Subject> subject = subjectRepository.findAll();   //Get all subjects from db
+        List<Subject> goodSubject = new ArrayList<>();   //Create list for subject who store part of group name
+
+        for(int i = 0; i != subject.size(); i++){
+            if (subject.get(i).getName().contains(subjectName)){
+                goodSubject.add(subject.get(i));
+            }
+        }
+
+//        List<APP_User> goodTeachers = userRepository.findByRole(new Role(RegisterController.ROLE_TEACHER));
+        List<APP_User> teachers = userRepository.findAll();
+        List<APP_User> goodTeachers = new ArrayList<>();
+
+        for(int i = 0; i != teachers.size(); i++){
+            if (teachers.get(i).getRole().getName().equalsIgnoreCase(RegisterController.ROLE_TEACHER)){
+                goodTeachers.add(teachers.get(i));
+            }
+        }
+
+
+        model.addAttribute("groupNumber", group.getName());
+        model.addAttribute("goodSubject", goodSubject);
+        model.addAttribute("teachers", goodTeachers);
+
+
+
+        return "/admin/subjectLinking";
+    }
+
+
+    @PostMapping("/admin/subjectLinking/link")
+    public String subjectLinking(Model model, @RequestParam(name = "groupNumber") String groupNumber, @RequestParam String goodSubject, @RequestParam(name = "teachers") String goodTeachers){
+
+
+        System.out.println("Group number: " + groupNumber + "\nSubject: " + goodSubject + "\nTeacher: " + goodTeachers);
+        teachingRepository.save(new Teaching(groupRepository.findByName(groupNumber).get(), subjectRepository.findById(Integer.parseInt(goodSubject)).get(), userRepository.findById(Integer.parseInt(goodTeachers)).get()));
+
+
+        return "/admin";
+    }
+
+
+
+    @GetMapping("/admin/banUser")
+    public String getBanPage(Model model, String firstname, String lastname, String mediumname){
+
+        model.addAttribute("firstname", firstname);
+        model.addAttribute("lastname", lastname);
+        model.addAttribute("mediumname", mediumname);
+
+        return "/admin/banUser";
+    }
+
+    @PostMapping("/admin/banUser")
+    public String banUser(Model model, String firstname, String lastname, String mediumname){
+
+
+        APP_User user = userRepository.findByFirstnameAndLastnameAndMiddlename(firstname, lastname, mediumname).get();
+
+        model.addAttribute("id", user.getId());
+        model.addAttribute("firstname", firstname);
+        model.addAttribute("lastname", lastname);
+        model.addAttribute("mediumname", mediumname);
+
+
+        String banstateF;
+
+        if(user.isBanstate()){
+            banstateF = BAN_TEXT;
+        }else {
+            banstateF = UNBAN_TEXT;
+        }
+
+        model.addAttribute("banstateF", banstateF);
+
+        List<String> banstate = new ArrayList<String>();
+        banstate.add(BAN_TEXT);
+        banstate.add(UNBAN_TEXT);
+
+        model.addAttribute("banstate", banstate);
+
+
+
+        return "/admin/banUser";
+    }
+
+    @PostMapping("/admin/banUser/confirm")
+    public String confirmBanState(Model model, @RequestParam(name = "id") int id, @RequestParam(name = "banstate") String banstate){
+
+        APP_User user = userRepository.findById(id).get();
+
+        System.out.println("Receive: " + banstate);
+
+        if (banstate.equalsIgnoreCase(BAN_TEXT)){
+            user.setBanstate(true);
+        } else if (banstate.equalsIgnoreCase(UNBAN_TEXT)){
+            user.setBanstate(false);
+        } else {
+            System.out.println("ERROR: Text from frontend did't response!");
+        }
+
+        System.out.println("Ban: " + user.isBanstate());
+        user = userRepository.save(user);
+
+        //TODO: Сделать реализацию проверки на блокировку при авторизации в системе!
+
+        return "/admin";
+    }
+
+    @GetMapping("/admin/changerUserInfoByLogin")
+    private String getChangerUserInfoByLoginPage(Model model){
+
+
+
+        return "/admin/changerUserInfoByLogin";
+    }
+
+    @PostMapping("/admin/changerUserInfoMain")
+    private String changerUserInfoByLoginPage(Model model, String username){
+
+        APP_User user = userRepository.findByUsername(username).get();
+
+        System.out.println(user.toString());
+
+        model.addAttribute("user", user);
+
+        return "/admin/changerUserInfoMain";
+    }
+
+    @PostMapping("/admin/changerUserInfoMain/confirm")
+    private String changeUserInfoMyConfirm(Model model, @ModelAttribute(name = "changeUserInfo") APP_User user, @RequestParam(name = "id") int id){
+
+        System.out.println(user.toString());
+
+        APP_User currectUser = userRepository.findById(id).get();
+
+        currectUser.setFirstname(user.getFirstname());
+        currectUser.setLastname(user.getLastname());
+        currectUser.setMiddlename(user.getMiddlename());
+        currectUser.setUsername(user.getUsername());
+        currectUser.setTelnumber(user.getTelnumber());
+        currectUser.setEmail(user.getEmail());
+
+        System.out.println(user.getPassword());
+//        if (user.getPassword()){
+//            currectUser.setPassword(webSecurityConfig.passwordEncoder().encode(user.getPassword()));
+//        }
+
+        userRepository.save(currectUser);
+
+        return "/admin";
+     }
 
 
 }

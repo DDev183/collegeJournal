@@ -12,9 +12,6 @@ public class Mark {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-//    private int teaching_id;
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
-    private Teaching teaching;
 
 //    private int student_id;
     private Date date;
@@ -22,16 +19,26 @@ public class Mark {
 
 
 //    private int Absent_id;
-    @ElementCollection(targetClass = Absent.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "absent", joinColumns = @JoinColumn(name = "mark_id"))
-    @Enumerated(EnumType.STRING)
-    private Set<Absent> absents;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "absent_id")
+    private Absent absent;
+
+    @ManyToOne()
+    @JoinColumn(name = "teaching_id")
+    private Teaching teaching;
+
+    @ManyToOne
+    @JoinColumn(name = "typeOfMark_id")
+    private typeOfMark typeOfMark;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private APP_User student;
 
 
-    @ElementCollection(targetClass = typeOfMark.class, fetch = FetchType.EAGER)
-    @CollectionTable(name = "typeOfMark", joinColumns = @JoinColumn(name = "mark_id"))
-    @Enumerated(EnumType.STRING)
-    private Set<typeOfMark> typeOfMarks;
+
+
+
 
 
 

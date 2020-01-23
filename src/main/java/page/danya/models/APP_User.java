@@ -1,8 +1,9 @@
 package page.danya.models;
 
 
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
@@ -10,13 +11,14 @@ import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
-import static org.springframework.boot.devtools.restart.AgentReloader.isActive;
 
 @Entity
 @Table(name = "usr")
+@Indexed
 public class APP_User implements UserDetails {
+
+    @Field
+    private int memory;
 
 
     @Id
@@ -32,7 +34,7 @@ public class APP_User implements UserDetails {
     private String password;
     @NotNull
     private String username;
-    private String telNumber;
+    private String telnumber;
     private String email;
     private boolean banState;
 
@@ -53,13 +55,13 @@ public class APP_User implements UserDetails {
         this.lastname = lastname;
     }
 
-    public APP_User(String firstname, String lastname, String password, String username, String telNumber, String email) {
+    public APP_User(String firstname, String lastname, String password, String username, String telnumber, String email) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.middlename = lastname;       //WARNING!!!
         this.password = password;
         this.username = username;
-        this.telNumber = telNumber;
+        this.telnumber = telnumber;
         this.email = email;
     }
 
@@ -82,23 +84,21 @@ public class APP_User implements UserDetails {
 
 
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    private Collection<Role> roles;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    private Role role;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne()
     @JoinColumn(name = "group_id")
     private Group group;
 
+    @OneToMany(mappedBy = "student")
+    private List<Mark> mark;
 
 
 
-
-
-//
-//    @OneToMany(cascade = CascadeType.ALL)
-//    @JoinColumn(name = "user_id")
-//    private Collection<Teaching> teachings;
-//
+    @OneToMany(mappedBy = "teacher")
+    private List<Teaching> teachings;
 
     public String getMiddlename() {
         return middlename;
@@ -108,12 +108,12 @@ public class APP_User implements UserDetails {
         this.middlename = middlename;
     }
 
-    public boolean isBanState() {
+    public boolean isBanstate() {
         return banState;
     }
 
-    public void setBanState(boolean banState) {
-        this.banState = banState;
+    public void setBanstate(boolean banstate) {
+        this.banState = banstate;
     }
 
     public Group getGroup() {
@@ -135,7 +135,7 @@ public class APP_User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getRoles();
+        return Collections.singleton(getRole());
 
     }
 
@@ -175,22 +175,38 @@ public class APP_User implements UserDetails {
         this.username = username;
     }
 
-    public String getTelNumber() {
-        return telNumber;
+    public String getTelnumber() {
+        return telnumber;
     }
 
-    public void setTelNumber(String telNumber) {
-        this.telNumber = telNumber;
+    public void setTelnumber(String telnumber) {
+        this.telnumber = telnumber;
     }
 
-    public Collection<Role> getRoles() {
-        return (Collection<Role>) roles;
+    public Role getRole() {
+        return role;
     }
 
-    public void setRoles(Collection<Role> roles) {
-        this.roles = roles;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
+
+    public List<Teaching> getTeachings() {
+        return teachings;
+    }
+
+    public void setTeachings(List<Teaching> teachings) {
+        this.teachings = teachings;
+    }
+
+    public List<Mark> getMark() {
+        return mark;
+    }
+
+    public void setMark(List<Mark> mark) {
+        this.mark = mark;
+    }
 
     @Override
     public String toString() {
@@ -200,7 +216,7 @@ public class APP_User implements UserDetails {
                 ", lastname='" + lastname + '\'' +
                 ", username='" + username + '\'' +
                 ", group=" + group +
-                ", role=" + roles +
+                ", role=" + role +
                 '}';
     }
 }

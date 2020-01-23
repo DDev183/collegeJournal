@@ -1,7 +1,6 @@
 package page.danya.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,15 +11,14 @@ import page.danya.models.Role;
 import page.danya.repository.APP_UserRepository;
 import page.danya.repository.GroupRepository;
 import page.danya.repository.RoleRepository;
-import page.danya.service.UserService;
-
-import java.util.*;
 
 @Controller
 public class RegisterController {
 
 
-    final String ROLE_USER = "ROLE_USER";
+    final static String ROLE_USER = "ROLE_USER";
+    final static String ROLE_TEACHER = "ROLE_TEACHER";
+    final static String ROLE_ADMIN = "ROLE_ADMIN";
 
     @Autowired
     private APP_UserRepository userRepository;
@@ -42,14 +40,27 @@ public class RegisterController {
     }
 
 
-    private Role createRoleIfNotFound(String name) {
 
-        Role role = roleRepository.findByName(name);
-        if (role == null) {
-            role = new Role(name);
-            roleRepository.save(role);
+    void rolesInit(){
+
+        Role userRole = roleRepository.findByName(ROLE_USER);
+        if (userRole == null) {
+            userRole = new Role(ROLE_USER);
+            roleRepository.save(userRole);
         }
-        return role;
+
+        Role teacherRole = roleRepository.findByName(ROLE_TEACHER);
+        if (teacherRole == null) {
+            teacherRole = new Role(ROLE_TEACHER);
+            roleRepository.save(teacherRole);
+        }
+
+        Role adminRole = roleRepository.findByName(ROLE_ADMIN);
+        if (adminRole == null) {
+            adminRole = new Role(ROLE_ADMIN);
+            roleRepository.save(adminRole);
+        }
+
     }
 
 
@@ -79,24 +90,20 @@ public class RegisterController {
 
         APP_User user = new APP_User();
 
-        Role role = roleRepository.findByName(ROLE_USER);
-        if (role == null) {
-            role = new Role(ROLE_USER);
-            roleRepository.save(role);
-        }
 
+        rolesInit();
 
         user.setFirstname(userData.getFirstname());
         user.setLastname(userData.getLastname());
         user.setMiddlename(userData.getMiddlename());
         user.setPassword(webSecurityConfig.passwordEncoder().encode(userData.getPassword()));
-        user.setTelNumber(userData.getTelNumber());
+        user.setTelnumber(userData.getTelnumber());
         user.setEmail(userData.getEmail());
         user.setUsername(userData.getUsername());
         user.setGroup(groupRepository.findById(1).get());  //set default value
 
-        Role userRole = roleRepository.findByName("ROLE_USER");
-        user.setRoles(Arrays.asList(userRole));
+        Role userRole = roleRepository.findByName(ROLE_USER);
+        user.setRole(userRole);
 
         user = userRepository.save(user);
 
