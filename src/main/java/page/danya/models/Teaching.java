@@ -36,7 +36,6 @@ public class Teaching {
 //    @JoinColumn(name = "teacher_id")
 //    private APP_User teacher;
 
-    // TODO: Create setters and getters!!!
 
     public Teaching() {
     }
@@ -45,5 +44,46 @@ public class Teaching {
         this.group = group;
         this.subject = subject;
         this.teacher = teacher;
+    }
+
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+
+    public Subject getSubject() {
+        return subject;
+    }
+
+    public void setSubject(Subject subject) {
+        this.subject = subject;
+    }
+
+    public List<Mark> getMarks() {
+        return marks;
+    }
+
+    public void setMarks(List<Mark> marks) {
+        this.marks = marks;
+    }
+
+    public APP_User getTeacher() {
+        return teacher;
+    }
+
+    public void setTeacher(APP_User teacher) {
+        this.teacher = teacher;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
