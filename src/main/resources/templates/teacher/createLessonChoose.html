@@ -40,64 +40,53 @@
 </nav>
 
 
-<div class="container">
-    <div class="row">
-        <div class="col-sm-1"></div>
-        <div class="col-sm-12">
-            <div class="jumbotron mt-2">
-                <div class="container">
-                    <h1 class="display-4">Панель преподавателя</h1>
-                    <p class="lead">Это панель создана для управление электронным журналом Краснодарского колледжа электронного приборостоения</p>
-                </div>
-            </div>
-            <div class="col-sm-1"></div>
-        </div>
-    </div>
-</div>
-
 
 
 <div class="row justify-content-center">
 
 
-    <div class="col-3 mt-4 shadow p-3 mb-5 ml-5 mr-3 bg-white rounded">
 
-        <p class="mt-1 mb-1 font-weight-light text-primary h2 mx-auto bg-white rounded">Управление группами</p>
-        <p><small>Всё что связано с группами</small></p>
+    <div class="col-6 mt-4 shadow p-3 mb-5 ml-3 mr-3 bg-white rounded">
 
-        <ul class="nav column">
-            <li class="nav-item">
-                <a class="nav-link" href="/teacher/showLoad">Просмотр нагрузки</a>
-                <a class="nav-link" href="/teacher/createLessonChoose">Создание предмета</a>
-                <a class="nav-link" href="/teacher/setMarks">Установка оценок</a>
-            </li>
-        </ul>
+        <p class="mt-1 mb-1 font-weight-light text-primary h2 mx-auto bg-white rounded">Выбор предмета и группы</p>
 
-        <!--    <a href="/registration" class="btn btn-outline-success mt-3" role="button" aria-disabled="true" >Зарегистрироваться</a>-->
-    </div>
+        <form th:action="@{/teacher/createLesson}" method="post" >
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Группа</th>
+                    <th>Предмет</th>
+                </tr>
+                </thead>
+                <tbody>
 
 
-    <div class="col-3 mt-4 shadow p-3 mb-5 ml-3 mr-3 bg-white rounded">
 
-        <p class="mt-1 mb-1 font-weight-light text-primary h2 mx-auto bg-white rounded">Учётные записи</p>
-        <p><small>Всё что связано с учётными записями</small></p>
+                <!--                             HIDDEN!!!!!                               -->
+                <input type="hidden" name="date" th:value="*{date}">
 
-        <ul class="nav column">
-            <li class="nav-item">
-                <a class="nav-link" href="/teacher/teacher">Преподавателя</a>
-                <a class="nav-link" href="/teacher/student">Студента</a>
-            </li>
-        </ul>
+
+                <td th:text="*{date}"></td>
+                <td>
+                    <select name="goodGroup">
+                        <option th:each="group : ${groups}" th:value="${group.name}" th:text="${group.name}"></option>
+                    </select>
+                </td>
+                <td>
+                    <select name="goodSubject">
+                        <option th:each="subject : ${subjects}" th:value="${subject.name}" th:text="${subject.name}"></option>
+                    </select>
+                </td>
+                </tbody>
+            </table>
+
+            <button type="submit" class="btn btn-primary mx-auto">Создать</button>
         </form>
     </div>
 
 
 </div>
-
-</div>
-
-
-<!--<button type="button" class="btn btn-outline-success">Success</button>-->
 
 
 

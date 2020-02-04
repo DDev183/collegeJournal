@@ -22,6 +22,9 @@ public class Absent {
 
     private String name;
 
+    @Column(name = "short_name")
+    private String shortname;
+
 
 
     @OneToMany(mappedBy = "absent", fetch = FetchType.EAGER)
@@ -30,6 +33,11 @@ public class Absent {
 
     //Constructors
 
+
+    public Absent(String name, String shortname) {
+        this.name = name;
+        this.shortname = shortname;
+    }
 
     public Absent() {
     }
@@ -60,6 +68,14 @@ public class Absent {
 
     public void setMarks(List<Mark> marks) {
         this.marks = marks;
+    }
+
+    public String getShortname() {
+        return shortname;
+    }
+
+    public void setShortname(String shortname) {
+        this.shortname = shortname;
     }
 
 

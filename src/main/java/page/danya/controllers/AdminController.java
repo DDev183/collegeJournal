@@ -29,6 +29,9 @@ public class AdminController {
     private TeachingRepository teachingRepository;
 
     @Autowired
+    private AbsentRepository absentRepository;
+
+    @Autowired
     private WebSecurityConfig webSecurityConfig;
 
 
@@ -40,11 +43,12 @@ public class AdminController {
 
 
 
-
     @GetMapping("/admin/createGroup")
     public String getCreateGroup(Model model){
-
         model.addAttribute("createGroupForm", new Group());
+        initAbsent();
+
+
         return "admin/createGroup";
     }
 
@@ -349,6 +353,7 @@ public class AdminController {
         return "/admin/changerUserInfoMain";
     }
 
+
     @PostMapping("/admin/changerUserInfoMain/confirm")
     private String changeUserInfoMyConfirm(Model model, @ModelAttribute(name = "changeUserInfo") APP_User user, @RequestParam(name = "id") int id){
 
@@ -372,6 +377,17 @@ public class AdminController {
 
         return "/admin";
      }
+
+
+    public void initAbsent(){
+        if(!absentRepository.findByShortname("НБ").isPresent()){
+            absentRepository.save(new Absent("Присутсвует", " "));
+            absentRepository.save(new Absent("Отсутсвует", "НБ"));
+            absentRepository.save(new Absent("Уважительный допуск", "УД"));
+            absentRepository.save(new Absent("Неуважительный допуск", "НД"));
+        }
+    }
+
 
 
 }

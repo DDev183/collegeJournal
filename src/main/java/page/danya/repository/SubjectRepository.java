@@ -8,6 +8,6 @@ import java.util.Optional;
 
 public interface SubjectRepository extends JpaRepository<Subject, Integer> {
 
-    Optional<Teaching> findByName(String name);
+    Optional<Subject> findByName(String name);
 
 }
