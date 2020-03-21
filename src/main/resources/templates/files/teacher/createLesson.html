@@ -50,7 +50,7 @@
 
         <p class="mt-1 mb-1 font-weight-light text-primary h2 mx-auto bg-white rounded">Выбор предмета и группы</p>
 
-        <form action="#" th:action="@{/teacher/createLesson/confirm}" method="post" modelAttribute="absentDAO" th:object="${absentDAO}">
+        <form th:action="@{/teacher/createLesson/confirm}" th:object="${absentDAO}" method="post">
             <table class="table table-bordered">
                 <thead>
                 <tr>
@@ -62,18 +62,19 @@
 
 
 
-                <tr th:each="dao,itemStat : ${absentDAO.list}"  th:field="${absentDAO}">
-                <td th:text="${dao.lastname}" th:value="${dao.lastname}" name="${dao.lastname}"></td>
+                <tr th:each="student,itemStat : ${absentDAO.list}"  th:field="${absentDAO}">
+                <td th:text="${student.lastname}" th:value="${student.lastname}"></td>
 
 
-                <td>
+                <td th:field="${student.absent}">
                     <select>
-                        <option th:each="absentList2 : ${dao.absentList}" th:value="${absentList2.shortname}" th:text="${absentList2.shortname}"></option>
+                        <option th:value="0"> </option>
+                        <option th:value="НБ">НБ</option>
                     </select>
                 </td>
 
 <!--                                             HIDDEN!!!!!-->
-<!--                <input type="hidden" name="absentDAO" th:object="${absentDAO}">-->
+<!--                <input type="hidden" name="studentList" th:object="${studentList}">-->
                 </tr>
                 </tbody>
             </table>

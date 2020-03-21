@@ -12,6 +12,9 @@ public class createAbsentDAO {
 
     private List<AbsentWithStudent> list;
 
+    public createAbsentDAO(List<AbsentWithStudent> list) {
+        this.list = list;
+    }
 
     public void addObjectToList(AbsentWithStudent student){
         this.list.add(student);

@@ -3,7 +3,6 @@ package page.danya.models;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.List;
 
 
@@ -47,14 +46,14 @@ public class Role implements GrantedAuthority {
         this.name = name;
     }
 
-    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER)
-    private List<APP_User> user;
+    @ManyToMany(mappedBy = "roles")
+    private List<APP_User> users;
 
-    public List<APP_User> getUser() {
-        return user;
+    public List<APP_User> getUsers() {
+        return users;
     }
 
-    public void setUser(List<APP_User> user) {
-        this.user = user;
+    public void setUsers(List<APP_User> users) {
+        this.users = users;
     }
 }

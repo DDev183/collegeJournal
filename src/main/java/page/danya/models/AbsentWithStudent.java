@@ -49,11 +49,11 @@ public class AbsentWithStudent{
         this.lastname = lastname;
     }
 
-    public List<Absent> getAbsentList() {
+    public List<Absent> getAbsent() {
         return absentList;
     }
 
-    public void setAbsentList(List<Absent> absentList) {
+    public void setAbsent(List<Absent> absentList) {
         this.absentList = absentList;
     }
 

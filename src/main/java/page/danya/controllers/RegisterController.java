@@ -1,18 +1,27 @@
 package page.danya.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import page.danya.config.WebSecurityConfig;
 import page.danya.models.APP_User;
 import page.danya.models.Group;
+import page.danya.DTO.Person;
 import page.danya.models.Role;
 import page.danya.repository.APP_UserRepository;
 import page.danya.repository.GroupRepository;
 import page.danya.repository.RoleRepository;
 
-@Controller
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+@RestController
 public class RegisterController {
 
 
@@ -32,43 +41,40 @@ public class RegisterController {
     @Autowired
     private RoleRepository roleRepository;
 
-    @GetMapping("/registration")
-    public String register(Model model){
-        System.out.println("Test");
-        model.addAttribute("registerForm", new APP_User());
-        return "registration";
-    }
+//    @GetMapping("/registration")
+//    public String register(Model model){
+//        System.out.println("Test");
+//        model.addAttribute("registerForm", new APP_User());
+//        return "registration";
+//    }
 
 
 
     void rolesInit(){
 
-        Role userRole = roleRepository.findByName(ROLE_USER);
-        if (userRole == null) {
-            userRole = new Role(ROLE_USER);
-            roleRepository.save(userRole);
-        }
+        Iterator<Role> roleIterator = roleRepository.findAll().listIterator();
 
-        Role teacherRole = roleRepository.findByName(ROLE_TEACHER);
-        if (teacherRole == null) {
-            teacherRole = new Role(ROLE_TEACHER);
-            roleRepository.save(teacherRole);
-        }
-
-        Role adminRole = roleRepository.findByName(ROLE_ADMIN);
-        if (adminRole == null) {
-            adminRole = new Role(ROLE_ADMIN);
-            roleRepository.save(adminRole);
+        while (roleIterator.hasNext()) {
+            if (roleIterator.next().getName().equalsIgnoreCase(ROLE_USER)) {
+                roleRepository.save(new Role(ROLE_USER));
+            }
+            if (roleIterator.next().getName().equalsIgnoreCase(ROLE_TEACHER)) {
+                roleRepository.save(new Role(ROLE_TEACHER));
+            }
+            if (roleIterator.next().getName().equalsIgnoreCase(ROLE_ADMIN)) {
+                roleRepository.save(new Role(ROLE_ADMIN));
+            }
         }
 
     }
 
+    @CrossOrigin    //VERY VERY IMPORTANT THINGS!!!!
+    @PostMapping(value = "/registration", consumes = "application/json")
+    public ResponseEntity addUser(@RequestBody Person person) throws URISyntaxException {
 
-    @PostMapping("/registration")
-    public String addUser(@ModelAttribute(name = "registerForm") APP_User userData, Model model){
 
+        System.out.println("Data's size= " + person.toString());
 
-        // Checking...
 
         if (groupRepository.findById(1).isPresent() == false){
             Group group = new Group();
@@ -80,36 +86,34 @@ public class RegisterController {
 
 
 
-//        System.out.println("POSTMAPPING");
-//        System.out.println(userData.getFirstname() + "\n" + userData.getLastname() + "\n" + userData.getUsername() + "\n" + userData.getPassword() + "\n" + userData.getEmail() + "\n" + userData.getTelNumber());
+        if (userRepository.findByUsername(person.getUsername()).isPresent()){
+            return ResponseEntity.status(401).build();
+        }
 
-//        if (userRepository.findByUsername(userData.getUsername()).get() != null){
-//            model.addAttribute("message", "User already created!");
-//            return "registration";
-//        }
-
-        APP_User user = new APP_User();
+            APP_User user = new APP_User();
 
 
-        rolesInit();
+            rolesInit();
 
-        user.setFirstname(userData.getFirstname());
-        user.setLastname(userData.getLastname());
-        user.setMiddlename(userData.getMiddlename());
-        user.setPassword(webSecurityConfig.passwordEncoder().encode(userData.getPassword()));
-        user.setTelnumber(userData.getTelnumber());
-        user.setEmail(userData.getEmail());
-        user.setUsername(userData.getUsername());
-        user.setGroup(groupRepository.findById(1).get());  //set default value
+            user.setFirstname(person.getFirstname());
+            user.setLastname(person.getLastname());
+            user.setMiddlename(person.getMiddlename());
+            user.setPassword(webSecurityConfig.passwordEncoder().encode(person.getPassword()));
+            user.setTelnumber(person.getTelnumber());
+            user.setEmail(person.getEmail());
+            user.setUsername(person.getUsername());
+            user.setGroup(groupRepository.findById(1).get());  //set default value
 
-        Role userRole = roleRepository.findByName(ROLE_USER);
-        user.setRole(userRole);
+            List<Role> roles = roleRepository.findByName(ROLE_USER);
+            user.setRole(roles);
 
-        user = userRepository.save(user);
+            user = userRepository.save(user);
 
 
+            System.out.println("User= " + user.getUsername() + " had been registered"); //Log
 
-        return "redirect:/login";
+            return ResponseEntity.status(200).build();
+
     }
 
 

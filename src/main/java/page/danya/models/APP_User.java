@@ -1,6 +1,7 @@
 package page.danya.models;
 
 
+import org.hibernate.annotations.ManyToAny;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +39,16 @@ public class APP_User implements UserDetails {
     private String telnumber;
     private String email;
     private boolean banState;
+
+    public APP_User(@NotNull String firstname, @NotNull String lastname, String middlename, @NotNull String password, @NotNull String username, String telnumber, String email) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.middlename = middlename;
+        this.password = password;
+        this.username = username;
+        this.telnumber = telnumber;
+        this.email = email;
+    }
 
 
     public String getEmail() {
@@ -84,9 +96,16 @@ public class APP_User implements UserDetails {
 
 
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "role_id")
-    private Role role;
+//    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JoinColumn(name = "role_id")
+//    private Role role;
+
+    @ManyToMany
+    @JoinTable(name = "user_role",
+    joinColumns = @JoinColumn(name = "user_id"),
+    inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private List<Role> roles = new ArrayList<>();
 
     @ManyToOne()
     @JoinColumn(name = "group_id")
@@ -135,7 +154,7 @@ public class APP_User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(getRole());
+        return roles;
 
     }
 
@@ -183,12 +202,12 @@ public class APP_User implements UserDetails {
         this.telnumber = telnumber;
     }
 
-    public Role getRole() {
-        return role;
+    public List<Role> getRole() {
+        return roles;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setRole(List<Role> roles) {
+        this.roles = roles;
     }
 
 
@@ -216,7 +235,7 @@ public class APP_User implements UserDetails {
                 ", lastname='" + lastname + '\'' +
                 ", username='" + username + '\'' +
                 ", group=" + group +
-                ", role=" + role +
+                ", role=" + roles.toString() +
                 '}';
     }
 }

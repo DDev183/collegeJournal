@@ -21,7 +21,7 @@ public interface APP_UserRepository extends JpaRepository<APP_User, Integer> {
 
     Optional<APP_User> findByFirstnameAndLastnameAndMiddlename(String firstname, String lastname, String middlename);
 
-    List<APP_User> findByRole(Role role);
+//    List<APP_User> findByRole(Role role);
 
     List<APP_User> findByGroup(Group group);
 

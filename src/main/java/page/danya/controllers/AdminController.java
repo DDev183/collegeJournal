@@ -198,8 +198,8 @@ public class AdminController {
 
         String roleString = "ROLE_" + roles;
 
-        Role role = roleRepository.findByName(roleString);
-        user.setRole(role);
+        List<Role> rolesList = roleRepository.findByName(roleString);
+        user.setRole(rolesList);
 
         userRepository.save(user);
 
@@ -237,9 +237,16 @@ public class AdminController {
         List<APP_User> teachers = userRepository.findAll();
         List<APP_User> goodTeachers = new ArrayList<>();
 
+
+        //MODIFIED VERSION!!!!
+
+
         for(int i = 0; i != teachers.size(); i++){
-            if (teachers.get(i).getRole().getName().equalsIgnoreCase(RegisterController.ROLE_TEACHER)){
-                goodTeachers.add(teachers.get(i));
+            Iterator<Role> roleList = teachers.get(i).getRole().listIterator();
+            while (roleList.hasNext()) {
+                if (roleList.next().getName().equalsIgnoreCase(RegisterController.ROLE_TEACHER)) {
+                    goodTeachers.add(teachers.get(i));
+                }
             }
         }
 

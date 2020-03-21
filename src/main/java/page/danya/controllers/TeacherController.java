@@ -8,15 +8,13 @@ import page.danya.DAO.createAbsentDAO;
 import page.danya.models.*;
 import page.danya.repository.*;
 
-import javax.swing.text.DateFormatter;
 import java.security.Principal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-@Controller
+@RestController
+@RequestMapping("/api")
 public class TeacherController {
 
     @Autowired
@@ -36,7 +34,7 @@ public class TeacherController {
 
     @GetMapping("/teacher")
     public String getTeacherPage(Model model){
-        return "/teacher/main";
+        return "/teacher";
         //TEST
     }
 
@@ -88,9 +86,13 @@ public class TeacherController {
     }
 
 
+
     @PostMapping("/teacher/createLesson")
     public String postCreateLessonChoose(Model model, Principal principal, @RequestParam(name = "goodGroup") String goodGroup, @RequestParam(name = "goodSubject") String goodSubject){
 
+
+        createAbsentDAO absentDAO = new createAbsentDAO();
+        List<AbsentWithStudent> studentList = new ArrayList<>();
 
         //Select info from database
         APP_User user = userRepository.findByUsername(principal.getName()).get();
@@ -99,7 +101,7 @@ public class TeacherController {
         List<APP_User> students = userRepository.findByGroup(group);
 
         //Create list with absent
-        List<Absent> absents = new ArrayList<>();
+        List<Absent> absents = new ArrayList<>(2);
         absents.add(absentRepository.findByName("Присутствует").get());     // be careful!
         absents.add(absentRepository.findByShortname("НБ").get());
 
@@ -108,30 +110,54 @@ public class TeacherController {
         String date = LocalDate.now().format(d);
 
         //DAO for form in frontend
-        createAbsentDAO absentDAO = new createAbsentDAO(students.size());
+
         for (int i = 0; i < students.size(); i++) {
-            APP_User student = students.get(i);
-            absentDAO.addObjectToList(new AbsentWithStudent(student.getId(), student.getFirstname(), student.getLastname(), absents, date));
+            AbsentWithStudent dao = new AbsentWithStudent();
+            dao.setAbsent(absents);
+            dao.setDate(date);
+            dao.setFirstname(students.get(i).getFirstname());
+            dao.setId(students.get(i).getId());
+            dao.setLastname(students.get(i).getLastname());
+
+            studentList.add(dao);
+//            absentDAO.addObjectToList(new AbsentWithStudent(student.getId(), student.getFirstname(), student.getLastname(), absents, date));
         }
 
+        absentDAO.setList(studentList);
+
         //Sent DAO to frontend
+//        model.addAttribute("absentDAO", absentDAO);
         model.addAttribute("absentDAO", absentDAO);
 
-//        model.addAttribute("absentList", absents);
 
 
         return "/teacher/createLesson";
     }
 
-    @PostMapping("/teacher/createLesson/confirm")
-    public String confirmCreateLesson(Model model, @ModelAttribute(name = "absentDAO") createAbsentDAO absentDAO){
+//    @PostMapping("/teacher/createLesson/confirm")
+//    public String confirmCreateLesson(@ModelAttribute createAbsentDAO absentDAO, Model model){
+//
+//
+//        createAbsentDAO dao = (createAbsentDAO) model.getAttribute("absentDAO");
+//
+//        System.out.println("DAO count: " + dao.getList().size());
+//
+//
+//        return "";
+//    }
 
+    @CrossOrigin
+    @GetMapping("/teacher/createLesson/confirm")
+    List<Group> groups(){
+        List<Group> list = new LinkedList();
+        list.addAll(groupRepository.findAll());
+        return list;
+    }
 
-
-        System.out.println("DAO count: " + absentDAO.getList().size());
-
-
-        return "/teacher/main";
+    @CrossOrigin
+    @GetMapping("/test")
+    String test(){
+        return "Эта зараза работает";
     }
 
 }
