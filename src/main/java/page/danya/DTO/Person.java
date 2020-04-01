@@ -12,6 +12,10 @@ import javax.persistence.Id;
 public class Person {
 
 
+    public Person() {
+    }
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonIgnoreProperties
@@ -124,6 +128,5 @@ public class Person {
         this.telnumber = telnumber;
     }
 
-    public Person() {
-    }
+
 }

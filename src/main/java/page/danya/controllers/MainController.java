@@ -77,7 +77,7 @@ public class MainController {
 
 
     @PostMapping("/deleteById")
-    public String deleteById(@RequestParam int id, Model model){
+    public String deleteById(@RequestParam String id, Model model){
 
         model.addAttribute("id", id);
         model.addAttribute("lastName", APPUserRepository.findById(id).get().getLastname());

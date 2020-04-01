@@ -1,5 +1,6 @@
 package page.danya.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -19,30 +20,24 @@ import java.util.Optional;
 
 
 @Service
+@Slf4j
 public class UserService implements UserDetailsService {
 
     @Autowired
     private APP_UserRepository userRepository;
 
 
-
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<APP_User> user = userRepository.findByUsername(username);
+//        return userRepository.findByUsername(username).get();
+        APP_User user = userRepository.findByUsername(username).get();
 
-
-
-
-
-        if (user.isPresent()){
-            JwtUser jwtUser = JwtUserFactory.create(user.get());
-            return jwtUser;
-        } else {
-            throw new UsernameNotFoundException("User not found");
+        if (user == null) {
+            throw new UsernameNotFoundException("User with username: " + username + " not found");
         }
 
+        JwtUser jwtUser = JwtUserFactory.create(user);
+        System.out.println("IN loadUserByUsername - user with username: {} successfully loaded " + username);
+        return jwtUser;
     }
-
-
 }

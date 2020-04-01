@@ -1,8 +1,6 @@
 package page.danya.models;
 
 
-import org.hibernate.annotations.ManyToAny;
-import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,30 +9,23 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 @Entity
 @Table(name = "usr")
-@Indexed
 public class APP_User implements UserDetails {
 
-    @Field
-    private int memory;
+
 
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    @NotNull
     private String firstname;
-    @NotNull
     private String lastname;
     private String middlename;
-    @NotNull
     private String password;
-    @NotNull
     private String username;
     private String telnumber;
     private String email;
@@ -100,7 +91,7 @@ public class APP_User implements UserDetails {
 //    @JoinColumn(name = "role_id")
 //    private Role role;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role",
     joinColumns = @JoinColumn(name = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "role_id")

@@ -31,11 +31,10 @@ public final class JwtUserFactory {
         );
     }
 
-    public static List<GrantedAuthority> mapToGrantedAuthorities(List<Role> userRoles){
+    private static List<GrantedAuthority> mapToGrantedAuthorities(List<Role> userRoles) {
         return userRoles.stream()
-                .map(
-                        role -> new SimpleGrantedAuthority(role.getName())
-                )
-                .collect(Collectors.toList());
+                .map(role ->
+                        new SimpleGrantedAuthority(role.getName())
+                ).collect(Collectors.toList());
     }
 }
