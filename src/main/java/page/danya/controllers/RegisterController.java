@@ -87,6 +87,9 @@ public class RegisterController {
                 String token = jwtTokenProvider.createToken(username, user.getRole());
 
 
+                System.out.println("User: " + username + " has been successfully logging");
+
+
                 Map<Object, Object> response = new HashMap<>();
                 response.put("username", username);
                 response.put("token", token);
@@ -129,9 +132,9 @@ public class RegisterController {
 
 
 
-//        if (userRepository.findByUsername(person.getUsername()).isPresent()){
-//            return ResponseEntity.status(401).build();
-//        }
+        if (userRepository.findByUsername(person.getUsername()).isPresent()){
+            return ResponseEntity.status(401).build();
+        }
 
             APP_User user = new APP_User();
 

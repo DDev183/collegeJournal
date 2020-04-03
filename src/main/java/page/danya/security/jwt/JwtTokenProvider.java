@@ -12,8 +12,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import page.danya.config.WebSecurityConfig;
 import page.danya.models.Role;
+import page.danya.models.TokenStorage;
+import page.danya.repository.TokenRepository;
 import page.danya.security.UserService;
 
 import javax.annotation.PostConstruct;
@@ -34,6 +37,10 @@ public class JwtTokenProvider {
 
 
     @Autowired
+    private TokenRepository tokenRepository;
+
+
+    @Autowired
     private UserService userDetailsService;  //    CHANGED
 
 
@@ -49,6 +56,8 @@ public class JwtTokenProvider {
         secret = Base64.getEncoder().encodeToString(secret.getBytes());
     }
 
+
+    @Transactional
     public String createToken(String username, List<Role> roles) {
 
         Claims claims = Jwts.claims().setSubject(username);
@@ -57,12 +66,17 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
 
-        return Jwts.builder()//
+        String token = Jwts.builder()//
                 .setClaims(claims)//
                 .setIssuedAt(now)//
                 .setExpiration(validity)//
-                .signWith(SignatureAlgorithm.HS256, secret)//
+                .signWith(SignatureAlgorithm.HS512, secret)//
                 .compact();
+
+        tokenRepository.deleteByUsername(username);
+        tokenRepository.save(new TokenStorage(username, token));
+
+        return token;
     }
 
     public Authentication getAuthentication(String token) {
@@ -83,16 +97,24 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String token) {
-        try {
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
 
-            if (claims.getBody().getExpiration().before(new Date())) {
-                return false;
+        if (tokenRepository.findByToken(token).isPresent()) {
+
+            try {
+
+
+                Jws<Claims> claims = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
+
+                if (claims.getBody().getExpiration().before(new Date())) {
+                    return false;
+                }
+
+                return true;
+            } catch (JwtException | IllegalArgumentException e) {
+                throw new JwtAuthenticationException("JWT token is expired or invalid");
             }
-
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new JwtAuthenticationException("JWT token is expired or invalid");
+        } else {
+            return false;
         }
     }
 

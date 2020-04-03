@@ -9,7 +9,7 @@ import page.danya.models.Role;
 import java.util.List;
 import java.util.Optional;
 
-public interface APP_UserRepository extends JpaRepository<APP_User, String> {
+public interface APP_UserRepository extends JpaRepository<APP_User, Integer> {
 
     Optional<APP_User> findByLastname(String lastName);
 

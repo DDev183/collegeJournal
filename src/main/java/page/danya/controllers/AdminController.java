@@ -104,7 +104,7 @@ public class AdminController {
 
 
     @PostMapping("/admin/addStudentToGroup/link")
-    public String addStudentToGroup(@RequestParam(name = "groupid") int groupid, @RequestParam(name = "id") String id, Model model){
+    public String addStudentToGroup(@RequestParam(name = "groupid") int groupid, @RequestParam(name = "id") int id, Model model){
 
 
         System.out.println("User id: " + id);
@@ -184,7 +184,7 @@ public class AdminController {
 
 
     @PostMapping("admin/changeRole/change")
-    public String changingRole(@ModelAttribute(name = "rolevalue") String roles, @RequestParam(name = "id") String id, Model model){
+    public String changingRole(@ModelAttribute(name = "rolevalue") String roles, @RequestParam(name = "id") int id, Model model){
 
         System.out.println("Role: " + roles);
         System.out.println("User id: " + id);
@@ -266,7 +266,7 @@ public class AdminController {
 
 
         System.out.println("Group number: " + groupNumber + "\nSubject: " + goodSubject + "\nTeacher: " + goodTeachers);
-        teachingRepository.save(new Teaching(groupRepository.findByName(groupNumber).get(), subjectRepository.findById(Integer.parseInt(goodSubject)).get(), userRepository.findById(goodTeachers).get()));
+//        teachingRepository.save(new Teaching(groupRepository.findByName(groupNumber).get(), subjectRepository.findById(Integer.parseInt(goodSubject)).get(), userRepository.findById(goodTeachers).get()));
 
 
         return "/admin";
@@ -318,7 +318,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/banUser/confirm")
-    public String confirmBanState(Model model, @RequestParam(name = "id") String id, @RequestParam(name = "banstate") String banstate){
+    public String confirmBanState(Model model, @RequestParam(name = "id") int id, @RequestParam(name = "banstate") String banstate){
 
         APP_User user = userRepository.findById(id).get();
 
@@ -362,7 +362,7 @@ public class AdminController {
 
 
     @PostMapping("/admin/changerUserInfoMain/confirm")
-    private String changeUserInfoMyConfirm(Model model, @ModelAttribute(name = "changeUserInfo") APP_User user, @RequestParam(name = "id") String id){
+    private String changeUserInfoMyConfirm(Model model, @ModelAttribute(name = "changeUserInfo") APP_User user, @RequestParam(name = "id") int id){
 
         System.out.println(user.toString());
 
