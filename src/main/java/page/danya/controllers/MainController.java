@@ -1,6 +1,7 @@
 package page.danya.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +28,8 @@ public class MainController {
     @Autowired
     JwtTokenProvider jwtTokenProvider;
 
+
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping(value = "/profile", produces = "application/json")
     public ResponseEntity profile(@RequestHeader("Authorization") String token){
         token = token.substring(7, token.length());
@@ -39,17 +42,6 @@ public class MainController {
         ProfileDTO dto = new ProfileDTO();
         dto = dto.fromUser(user);
 
-
-//        Map<Object, Object> response = new HashMap<>();
-//        response.put("username", username);
-//        response.put("firstname", user.getFirstname());
-//        response.put("lastname", user.getLastname());
-//        response.put("middlename", user.getMiddlename());
-//        response.put("role", user.getRole());
-//        response.put("email", user.getEmail());
-//        response.put("banstate", user.isBanstate());
-//        response.put("telnumber", user.getTelnumber());
-//        response.put("group", user.getGroup());
 
         return ResponseEntity.ok(dto);
     }

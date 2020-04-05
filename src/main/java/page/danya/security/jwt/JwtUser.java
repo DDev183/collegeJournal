@@ -28,8 +28,8 @@ public class JwtUser implements UserDetails {
     public JwtUser(
             int id,
             String username,
-            String firstName,
-            String lastName,
+            String firstname,
+            String lastname,
             String middlename,
             String telnumber,
             String email,
@@ -39,8 +39,8 @@ public class JwtUser implements UserDetails {
     ) {
         this.id = id;
         this.username = username;
-        this.firstname = firstName;
-        this.lastname = lastName;
+        this.firstname = firstname;
+        this.lastname = lastname;
         this.email = email;
         this.telnumber = telnumber;
         this.middlename = middlename;
