@@ -64,7 +64,7 @@ public class RegisterController {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
-
+    @CrossOrigin(methods = RequestMethod.POST)
     @PostMapping(value = "/login")
     public ResponseEntity login(@RequestBody AuthenticationRequestDto requestDto){
         try {
@@ -115,7 +115,7 @@ public class RegisterController {
 
     }
 
-    @CrossOrigin    //VERY VERY IMPORTANT THINGS!!!!
+    @CrossOrigin(methods = RequestMethod.POST)
     @PostMapping(value = "/registration")
     public ResponseEntity addUser(@RequestBody Person person) throws URISyntaxException {
 

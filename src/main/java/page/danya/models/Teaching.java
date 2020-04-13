@@ -1,5 +1,7 @@
 package page.danya.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.List;
@@ -11,18 +13,21 @@ public class Teaching {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "group_id")
     private Group group;
 
+    @JsonIgnore
     @ManyToOne()
     @JoinColumn(name = "subject_id")
     private Subject subject;
 
-
+    @JsonIgnore
     @OneToMany(mappedBy = "teaching")
-    private List<Mark> marks;
+    private List<Lesson> lessons;
 
+    @JsonIgnore
     @ManyToOne()
     @JoinColumn(name = "teacher_id")
     private APP_User teacher;
@@ -40,10 +45,11 @@ public class Teaching {
     public Teaching() {
     }
 
-    public Teaching(Group group, Subject subject, APP_User teacher) {
+    public Teaching(Group group, Subject subject, APP_User teacher, List<Lesson> lessons) {
         this.group = group;
         this.subject = subject;
         this.teacher = teacher;
+        this.lessons = lessons;
     }
 
 
@@ -63,12 +69,12 @@ public class Teaching {
         this.subject = subject;
     }
 
-    public List<Mark> getMarks() {
-        return marks;
+    public List<Lesson> getLessons() {
+        return lessons;
     }
 
-    public void setMarks(List<Mark> marks) {
-        this.marks = marks;
+    public void setLessons(List<Lesson> lessons) {
+        this.lessons = lessons;
     }
 
     public APP_User getTeacher() {

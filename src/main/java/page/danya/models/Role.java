@@ -1,5 +1,6 @@
 package page.danya.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 
 import javax.persistence.*;
@@ -46,6 +47,7 @@ public class Role implements GrantedAuthority {
         this.name = name;
     }
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "roles")
     private List<APP_User> users;
 

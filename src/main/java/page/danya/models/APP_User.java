@@ -1,6 +1,7 @@
 package page.danya.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.search.annotations.Indexed;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,6 +26,8 @@ public class APP_User implements UserDetails {
     private String firstname;
     private String lastname;
     private String middlename;
+
+    @JsonIgnore
     private String password;
     private String username;
     private String telnumber;
@@ -91,6 +94,7 @@ public class APP_User implements UserDetails {
 //    @JoinColumn(name = "role_id")
 //    private Role role;
 
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role",
     joinColumns = @JoinColumn(name = "user_id"),
@@ -98,15 +102,17 @@ public class APP_User implements UserDetails {
     )
     private List<Role> roles = new ArrayList<>();
 
+    @JsonIgnore
     @ManyToOne()
     @JoinColumn(name = "group_id")
     private Group group;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "student")
     private List<Mark> mark;
 
 
-
+    @JsonIgnore
     @OneToMany(mappedBy = "teacher")
     private List<Teaching> teachings;
 
