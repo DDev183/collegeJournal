@@ -45,6 +45,12 @@ public class Mark {
     public Mark() {
     }
 
+    public Mark(Absent absent, APP_User student, Lesson lesson) {
+        this.absent = absent;
+        this.student = student;
+        this.lesson = lesson;
+    }
+
     public Mark(int id, int value, Absent absent, page.danya.models.typeOfMark typeOfMark, APP_User student, Lesson lesson) {
         this.id = id;
         this.value = value;

@@ -9,16 +9,11 @@ import org.springframework.web.bind.annotation.*;
 import page.danya.DAO.ProfileDAO;
 import page.danya.DTO.ProfileDTO;
 import page.danya.DTO.findByLastAndFirst;
-import page.danya.models.APP_User;
-import page.danya.models.Group;
-import page.danya.models.Role;
-import page.danya.models.Subject;
-import page.danya.repository.APP_UserRepository;
-import page.danya.repository.GroupRepository;
-import page.danya.repository.RoleRepository;
-import page.danya.repository.SubjectRepository;
+import page.danya.models.*;
+import page.danya.repository.*;
 import page.danya.security.jwt.JwtTokenProvider;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 @RestController
@@ -31,6 +26,9 @@ public class AdminController {
     private APP_UserRepository userRepository;
 
     @Autowired
+    private TeachingRepository teachingRepository;
+
+    @Autowired
     private GroupRepository groupRepository;
 
     @Autowired
@@ -41,6 +39,47 @@ public class AdminController {
 
     @Autowired
     private SubjectRepository subjectRepository;
+
+    @Autowired
+    private AbsentRepository absentRepository;
+
+
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/init", produces = "application/json")
+    public ResponseEntity init(@RequestHeader("Authorization") String token){
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (role.equals(RegisterController.ROLE_ADMIN)){
+
+            if (!absentRepository.findByShortname("НБ").isPresent()){
+                Absent absent = new Absent("Отсутствует", "НБ");
+                absentRepository.save(absent);
+            }
+            if (!absentRepository.findByShortname("УП").isPresent()){
+                Absent absent = new Absent("Уважительный пропуск", "УП");
+                absentRepository.save(absent);
+            }
+            if (!absentRepository.findByShortname("НП").isPresent()){
+                Absent absent = new Absent("Неуважительный пропуск", "НП");
+                absentRepository.save(absent);
+            }
+            if (!absentRepository.findByName("Присутствует").isPresent()){
+                Absent absent = new Absent("Присутствует", " ");
+                absentRepository.save(absent);
+            }
+
+
+
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
 
 
     @CrossOrigin( methods = RequestMethod.POST)
@@ -416,8 +455,21 @@ public class AdminController {
     public ResponseEntity linkTSG(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body){
         token = token.substring(7, token.length());
 //        System.out.println(body.get("Group"));
-        String userId = body.get("userId");
-        String roleName = body.get("role");
+        String subjectName = body.get("subject");
+        String groupName = body.get("group");
+        String teacherLastAndFirstname = body.get("teacher");
+
+        Subject subject = subjectRepository.findByName(subjectName).get();
+        Group group = groupRepository.findByName(groupName).get();
+        String[] array = teacherLastAndFirstname.split(" ");
+        String lastname = array[0];
+        String firstname = array[1];
+
+        APP_User teacher = userRepository.findByFirstnameAndLastnameAndRoles(firstname, lastname, roleRepository.findByName(RegisterController.ROLE_TEACHER).get(0)).get();
+
+
+
+
 
 
         String username = jwtTokenProvider.getUsername(token);
@@ -425,13 +477,7 @@ public class AdminController {
 
         if (userRole.equals(RegisterController.ROLE_ADMIN)){
 
-
-            APP_User user = userRepository.findById(Integer.parseInt(userId)).get();
-
-            List<Role> role = roleRepository.findByName(roleName);
-            user.setRole(role);
-
-            userRepository.save(user);
+            teachingRepository.save(new Teaching(group, subject, teacher));
 
             return ResponseEntity.ok().build();
         } else {
