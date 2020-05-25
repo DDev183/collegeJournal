@@ -24,4 +24,9 @@ public interface TeachingRepository extends JpaRepository<Teaching, Integer> {
     Optional<Teaching> findByTeacherAndGroupAndSubject(APP_User teacher, Group group, Subject subject);
 
 
+    List<Teaching> findByGroup(Group group);
+
+    Optional<Teaching> findBySubject(Subject subject);
+
+
 }

@@ -14,13 +14,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import page.danya.DTO.AuthenticationRequestDto;
 import page.danya.config.WebSecurityConfig;
-import page.danya.models.APP_User;
-import page.danya.models.Group;
+import page.danya.models.*;
 import page.danya.DTO.Person;
-import page.danya.models.Role;
-import page.danya.repository.APP_UserRepository;
-import page.danya.repository.GroupRepository;
-import page.danya.repository.RoleRepository;
+import page.danya.repository.*;
 import page.danya.security.UserService;
 import page.danya.security.jwt.JwtTokenProvider;
 
@@ -43,6 +39,9 @@ public class RegisterController {
     private APP_UserRepository userRepository;
 
     @Autowired
+    private AbsentRepository absentRepository;
+
+    @Autowired
     private GroupRepository groupRepository;
 
     @Autowired
@@ -62,6 +61,9 @@ public class RegisterController {
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    private EnglishRepository englishRepository;
 
 
     @CrossOrigin(methods = RequestMethod.POST)
@@ -144,6 +146,9 @@ public class RegisterController {
 
 
 
+
+
+
             user.setFirstname(person.getFirstname());
             user.setLastname(person.getLastname());
             user.setMiddlename(person.getMiddlename());
@@ -152,6 +157,7 @@ public class RegisterController {
             user.setPassword(jwtTokenProvider.passwordEncoder().encode(person.getPassword()));
             user.setTelnumber(person.getTelnumber());
             user.setGroup(groupRepository.findById(1).get());  //set default value
+            user.setEnglishDependent(englishRepository.findById(10).get());  //set default value
 
             List<Role> roles = roleRepository.findByName(ROLE_USER);
             user.setRole(roles);

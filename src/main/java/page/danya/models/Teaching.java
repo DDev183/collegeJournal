@@ -52,6 +52,8 @@ public class Teaching {
         this.lessons = lessons;
     }
 
+
+
     public Teaching(Group group, Subject subject, APP_User teacher) {
         this.group = group;
         this.subject = subject;

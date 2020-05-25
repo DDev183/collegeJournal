@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Set;
 
@@ -19,10 +21,29 @@ public class Mark {
 //    private Date date;
     private int value;
 
+    private LocalDate date;
+    private LocalTime time;
 
-//    private int Absent_id;
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public LocalTime getTime() {
+        return time;
+    }
+
+    public void setTime(LocalTime time) {
+        this.time = time;
+    }
+
+    //    private int Absent_id;
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne()
     @JoinColumn(name = "absent_id")
     private Absent absent;
 
@@ -45,11 +66,21 @@ public class Mark {
     public Mark() {
     }
 
+    public Mark(Absent absent, APP_User student, Lesson lesson, LocalTime time, LocalDate date) {
+        this.absent = absent;
+        this.student = student;
+        this.lesson = lesson;
+        this.time = time;
+        this.date = date;
+    }
+
     public Mark(Absent absent, APP_User student, Lesson lesson) {
         this.absent = absent;
         this.student = student;
         this.lesson = lesson;
     }
+
+
 
     public Mark(int id, int value, Absent absent, page.danya.models.typeOfMark typeOfMark, APP_User student, Lesson lesson) {
         this.id = id;
@@ -115,4 +146,7 @@ public class Mark {
     public void setLesson(Lesson lesson) {
         this.lesson = lesson;
     }
+
+
+
 }

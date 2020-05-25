@@ -1,20 +1,18 @@
 package page.danya.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import page.danya.DAO.ProfileDAO;
-import page.danya.DTO.ProfileDTO;
+import page.danya.DTO.EnglishDependentDTO;
 import page.danya.DTO.findByLastAndFirst;
 import page.danya.models.*;
 import page.danya.repository.*;
 import page.danya.security.jwt.JwtTokenProvider;
 
-import java.lang.reflect.Array;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @RestController
 @CrossOrigin()    //VERY VERY IMPORTANT THINGS!!!!
@@ -43,6 +41,9 @@ public class AdminController {
     @Autowired
     private AbsentRepository absentRepository;
 
+    @Autowired
+    private EnglishRepository englishRepository;
+
 
     @CrossOrigin( methods = RequestMethod.POST)
     @PostMapping(value = "/init", produces = "application/json")
@@ -69,6 +70,14 @@ public class AdminController {
             if (!absentRepository.findByName("Присутствует").isPresent()){
                 Absent absent = new Absent("Присутствует", " ");
                 absentRepository.save(absent);
+            }
+            if (!englishRepository.findById(10).isPresent()){  //Default englishDependent
+                EnglishDependent englishDependent = new EnglishDependent(10);
+                englishRepository.save(englishDependent);
+            }
+
+            if (!groupRepository.findById(10).isPresent()){
+                groupRepository.save(new Group(10, "Default group"));
             }
 
 
@@ -480,6 +489,152 @@ public class AdminController {
             teachingRepository.save(new Teaching(group, subject, teacher));
 
             return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+
+    @CrossOrigin( methods = RequestMethod.GET)
+    @GetMapping(value = "/getsStudentsFromGroup", produces = "application/json")
+    public ResponseEntity getStudentsFromGroupGet(@RequestHeader("Authorization") String token, @RequestParam String group, @RequestParam String teacher, @RequestParam String subject){
+        token = token.substring(7, token.length());
+//        System.out.println(body.get("Group"));
+
+        System.out.println(group + "\n" + teacher + "\n" + subject);
+
+
+
+        Group thisGroup = groupRepository.findByName(group).get();
+        Subject thisSubject = subjectRepository.findByName(subject).get();
+
+        String[] array = teacher.split(" ");
+        APP_User thisTeacher = userRepository.findByFirstnameAndLastnameAndRoles(array[1], array[0], roleRepository.findByName(RegisterController.ROLE_TEACHER).get(0)).get();
+
+
+
+        String username = jwtTokenProvider.getUsername(token);
+        String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+
+        if (userRole.equals(RegisterController.ROLE_ADMIN)){
+
+
+            if (!englishRepository.findByGroupAndSubjectAndTeacher(thisGroup, thisSubject, thisTeacher).isPresent()){
+                englishRepository.save(new EnglishDependent(thisTeacher, thisSubject, thisGroup));
+            }
+
+            EnglishDependent englishDependent = englishRepository.findByGroupAndSubjectAndTeacher(thisGroup, thisSubject, thisTeacher).get();
+            List<APP_User> studentsList = userRepository.findByGroup(englishDependent.getGroup());
+
+            List<APP_User> students = userRepository.findByGroup(thisGroup);
+            List<String> studentsName = new ArrayList<>();
+            List<String> value = new ArrayList<>();
+
+            students.stream().forEach(e -> {
+                AtomicBoolean flag = new AtomicBoolean(false);
+                studentsName.add(e.getLastname() + " " + e.getFirstname());
+                studentsList.stream().forEach(k -> {
+                    if (k.getId() == e.getId()){
+                        flag.set(true);
+                        value.add("+");
+                    }
+                });
+
+                if (flag.get() == false) value.add(" ");
+            });
+
+            EnglishDependentDTO dto = new EnglishDependentDTO();
+            dto.setStudents(studentsName);
+            dto.setValue(value);
+
+
+
+
+
+
+
+            return ResponseEntity.ok(dto);
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/englishDependent", produces = "application/json")
+    public ResponseEntity englishDependent(@RequestHeader("Authorization") String token, @RequestBody EnglishDependentDTO dto) throws InterruptedException {
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        Group thisGroup = groupRepository.findByName(dto.getGroup()).get();
+        Subject thisSubject = subjectRepository.findByName(dto.getSubject()).get();
+        APP_User thisTeacher = userRepository.findByUsername(username).get();
+
+
+        if (role.equals(RegisterController.ROLE_ADMIN)){
+
+
+            if (!englishRepository.findByGroupAndSubjectAndTeacher(thisGroup, thisSubject, thisTeacher).isPresent()){
+                englishRepository.save(new EnglishDependent(thisTeacher, thisSubject, thisGroup));
+            }
+
+                EnglishDependent englishDependent = englishRepository.findByGroupAndSubjectAndTeacher(thisGroup, thisSubject, thisTeacher).get();
+                EnglishDependent defaultEnglishDependent = englishRepository.findById(10).get();
+//                englishRepository.delete(englishDependent);
+
+
+
+            List<String> students = dto.getStudents();
+                List<String> values = dto.getValue();
+
+                List<APP_User> studentsList = new ArrayList<>();
+
+                Map<String, String> map = IntStream.range(0, students.size())
+                        .boxed()
+                        .collect(Collectors.toMap(i -> students.get(i), i -> values.get(i)));
+
+
+                map.entrySet().stream()
+                        .filter(e -> e.getValue().equalsIgnoreCase("+"))
+                        .forEach(e -> {
+                        String[] array = e.getKey().split(" ");
+                            System.out.println(array[0]);
+                            APP_User student = userRepository.findByLastnameAndFirstnameAndGroup(array[0], array[1], thisGroup).get();
+                        studentsList.add(student);
+                        student.setEnglishDependent(englishDependent);
+                        userRepository.save(student);
+                });
+
+            map.entrySet().stream()
+                    .filter(e -> e.getValue().equalsIgnoreCase(" "))
+                    .forEach(e -> {
+                        String[] array = e.getKey().split(" ");
+                        System.out.println(array[0]);
+                        APP_User student = userRepository.findByLastnameAndFirstnameAndGroup(array[0], array[1], thisGroup).get();
+                        studentsList.add(student);
+                        student.setEnglishDependent(defaultEnglishDependent);
+                        userRepository.save(student);
+                    });
+
+//                englishDependent.setStudents(studentsList);
+//                System.out.println(englishDependent.getStudents().size());
+//
+//                englishRepository.saveAndFlush(englishDependent);
+
+
+
+
+
+                return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(403).build();
 

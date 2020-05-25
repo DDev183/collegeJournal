@@ -7,11 +7,17 @@ import page.danya.models.Mark;
 import page.danya.models.Teaching;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 public interface MarkRepository extends JpaRepository<Mark, Integer> {
 
     Optional<Mark> findByLessonAndStudent(Lesson lesson, APP_User student);
+
+
+    List<Mark> findByStudent(APP_User student);
+
+    List<Mark> findFirst15ByStudent(APP_User student);
 
 
 

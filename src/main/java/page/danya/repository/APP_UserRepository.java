@@ -3,6 +3,7 @@ package page.danya.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 import page.danya.models.APP_User;
+import page.danya.models.EnglishDependent;
 import page.danya.models.Group;
 import page.danya.models.Role;
 
@@ -33,5 +34,7 @@ public interface APP_UserRepository extends JpaRepository<APP_User, Integer> {
     List<APP_User> findByRoles(Role roles);
 
     Optional<APP_User> findByLastnameAndFirstnameAndGroup(String lastname, String firstname, Group group);
+
+    List<APP_User> findByEnglishDependent(EnglishDependent englishDependent);
 
 }

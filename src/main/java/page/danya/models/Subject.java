@@ -25,6 +25,11 @@ public class Subject {
     @OneToMany(mappedBy = "subject")
     private List<Teaching> teachings;
 
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "subject")
+    private List<EnglishDependent> englishDependents;
+
     public Subject(){
     }
 

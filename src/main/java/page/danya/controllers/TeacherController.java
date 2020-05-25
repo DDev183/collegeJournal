@@ -2,10 +2,7 @@ package page.danya.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import page.danya.DAO.createAbsentDAO;
 import page.danya.DTO.SetMarkDTO;
 import page.danya.DTO.TeacherMarkDTO;
 import page.danya.DTO.createLessonDTO;
@@ -13,17 +10,20 @@ import page.danya.models.*;
 import page.danya.repository.*;
 import page.danya.security.jwt.JwtTokenProvider;
 
-import java.security.Principal;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @CrossOrigin()    //VERY VERY IMPORTANT THINGS!!!!
 @RequestMapping("/api/teacher")
 public class TeacherController {
+
+
+    List<Subject> chechListForEnglish = new LinkedList<>();
 
     @Autowired
     private APP_UserRepository userRepository;
@@ -52,6 +52,9 @@ public class TeacherController {
     @Autowired
     private MarkRepository markRepository;
 
+    @Autowired
+    private EnglishRepository englishRepository;
+
 
 
 //    @CrossOrigin
@@ -59,6 +62,18 @@ public class TeacherController {
 //    String test(){
 //        return "Эта зараза работает";
 //    }
+
+
+
+    private void fillCheckList(){
+        if (chechListForEnglish.isEmpty()){
+            englishRepository.findAll().stream()
+                    .forEach(englishDependent -> {
+                        chechListForEnglish.add(englishDependent.getSubject());
+                    });
+        }
+
+    }
 
 
     @CrossOrigin(methods = RequestMethod.GET)
@@ -162,32 +177,66 @@ public class TeacherController {
         String subjectName = body.get("subject");
         //TODO: ADD ENGLISH subGROUPS
 
+
+        if (chechListForEnglish.isEmpty()){
+            englishRepository.findAll().stream()
+                    .filter(englishDependent -> englishDependent.getSubject() != null)
+                    .forEach(englishDependent -> {
+                        chechListForEnglish.add(englishDependent.getSubject());
+                    });
+        }
+
         Group group = groupRepository.findByName(groupName).get();
 
 
         String username = jwtTokenProvider.getUsername(token);
         String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
 
-        if (userRole.equals(RegisterController.ROLE_TEACHER)){
+        if (userRole.equals(RegisterController.ROLE_TEACHER)) {
+            System.out.println("KEKS!");
 
-            List<String> res = new ArrayList<>();
+            if (chechListForEnglish.contains(subjectRepository.findByName(subjectName).get())) {
 
-
-
-
-
-            userRepository.findByGroup(group).forEach(student ->{
-                res.add(student.getLastname() + " " + student.getFirstname());
-            });
-
+                EnglishDependent dependent = englishRepository.findByGroupAndSubjectAndTeacher(groupRepository.findByName(groupName).get(), subjectRepository.findByName(subjectName).get(), userRepository.findByUsername(username).get()).get();
+                List<Integer> listDepent = new ArrayList<>();
+                englishRepository.findAll().stream()
+                        .filter(englishDependent -> englishDependent.getId() != 10)
+                        .forEach(englishDependent -> listDepent.add(englishDependent.getId()));
 
 
 
-            return ResponseEntity.ok(res);
-        } else {
-            return ResponseEntity.status(403).build();
+                System.out.println("HELP!!!");
 
-        }
+
+
+
+
+                List<String> res = new ArrayList<>();
+                userRepository.findByGroup(group).stream()
+                        .filter(student -> listDepent.contains(student.getEnglishDependent().getId()) )
+                        .forEach(student -> {
+                    res.add(student.getLastname() + " " + student.getFirstname());
+                });
+
+
+                return ResponseEntity.ok(res);
+
+
+            } else {
+                System.out.println("HELP222222!!!");
+                List<String> res = new ArrayList<>();
+                userRepository.findByGroup(group).forEach(student -> {
+                    res.add(student.getLastname() + " " + student.getFirstname());
+                });
+
+
+                return ResponseEntity.ok(res);
+            }
+            } else {
+                return ResponseEntity.status(403).build();
+
+            }
+
 
     }
 
@@ -237,10 +286,11 @@ public class TeacherController {
             lessonRepository.save(lesson);
             List<APP_User> students = userRepository.findByGroup(groupRepository.findByName(groupName).get());
 
+
             students.stream()
                     .filter(e -> absentStudents.contains(e))
                     .forEach(e ->{
-                        Mark mark = new Mark(absentRepository.findByShortname("НБ").get(), e, lesson);
+                        Mark mark = new Mark(absentRepository.findByShortname("НБ").get(), e, lesson, LocalTime.now(), LocalDate.now());
                         System.out.println(mark.toString());
                         markRepository.save(mark);
                     });
@@ -249,7 +299,7 @@ public class TeacherController {
             students.stream()
                     .filter(e -> !absentStudents.contains(e))
                     .forEach(e -> {
-                        Mark mark = new Mark(absentRepository.findByName("Присутствует").get(), e, lesson);
+                        Mark mark = new Mark(absentRepository.findByName("Присутствует").get(), e, lesson, LocalTime.now(), LocalDate.now());
                         System.out.println(mark.toString());
                         markRepository.save(mark);
                     });
@@ -286,28 +336,45 @@ public class TeacherController {
         if (userRole.equals(RegisterController.ROLE_TEACHER)){
 
             TeacherMarkDTO res = new TeacherMarkDTO();
-            List<APP_User> studentsList = userRepository.findByGroup(group);
+
+            List<APP_User> studentsList = new ArrayList<>();
+
+            if (englishRepository.findByGroupAndSubjectAndTeacher(group, subject, teacher).isPresent()){
+                int idEnglish = englishRepository.findByGroupAndSubjectAndTeacher(group, subject, teacher).get().getId();
+                userRepository.findByGroup(group).stream().forEach(student -> {
+                    if (student.getEnglishDependent().getId() == idEnglish){
+                        studentsList.add(student);
+                    }
+                });
+            } else
+            {
+                 studentsList.addAll(userRepository.findByGroup(group));
+            }
 
             List<String> students = new ArrayList<>();
             List< List<String>> marks = new ArrayList<>();
             List< List<String>> absents = new ArrayList<>();
-            List<LocalDate> dates = new ArrayList<>();
+            List<String> dates = new ArrayList<>();
+            List<LocalDate> tempDates = new ArrayList<>();
 
 
 
 
             studentsList.stream()
             .forEach(e -> {
-                students.add(e.getLastname() + " " + e.getFirstname());
+                   students.add(e.getLastname() + " " + e.getFirstname());
             });
             res.setStudents(students);
 
 
+
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.YYYY");
             Teaching teaching = teachingRepository.findByTeacherAndGroupAndSubject(teacher, group, subject).get();
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM.dd");
             lessonRepository.findByTeaching(teaching).stream()
                     .forEach(e -> {
-                        dates.add(e.getDate());
+                        dates.add(e.getDate().format(dateFormatter));
+                        tempDates.add(e.getDate());
                     });
             res.setDates(dates);
 
@@ -317,10 +384,11 @@ public class TeacherController {
                                 .forEach(student -> {
 
 
+
                                     List<String> markWithAbsent = new ArrayList<>();
                                     List<String> absentList = new ArrayList<>();
 
-                                    dates.stream()
+                                    tempDates.stream()
                                             .forEach(date -> {
 
 
@@ -328,7 +396,11 @@ public class TeacherController {
 
                                                 Lesson lesson = lessonRepository.findByTeachingAndDate(teaching, date).get();
 
+
+
                                     Mark mark = markRepository.findByLessonAndStudent(lesson, student).get();
+
+
                                     String value;
                                     String absent;
                                     if (mark.getValue() == 0){
@@ -390,6 +462,7 @@ public class TeacherController {
         System.out.println(groupName);
         System.out.println(subjectName);
         System.out.println(body.getDate());
+
         System.out.println(body.getStudents().size());
         Map<String, String> students = body.getStudents();
 
@@ -409,6 +482,7 @@ public class TeacherController {
 
 
             LocalDate date = body.getDate();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM.dd");
             Teaching teaching = teachingRepository.findByTeacherAndGroup(userRepository.findByUsername(username).get(), group).get(0);
 
             Lesson lesson = lessonRepository.findByTeachingAndDate(teaching, date).get();
@@ -422,6 +496,8 @@ public class TeacherController {
                         APP_User student = userRepository.findByLastnameAndFirstnameAndGroup(lastname, firstname, group).get();
                         Mark mark = markRepository.findByLessonAndStudent(lesson, student).get();
 
+                        mark.setDate(LocalDate.now());
+                        mark.setTime(LocalTime.now());
                         mark.setValue(Integer.parseInt(e.getValue()));
 
                         markRepository.save(mark);
@@ -437,6 +513,12 @@ public class TeacherController {
         }
 
     }
+
+
+
+
+
+
 
 
 }

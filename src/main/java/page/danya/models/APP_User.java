@@ -116,6 +116,13 @@ public class APP_User implements UserDetails {
     @OneToMany(mappedBy = "teacher")
     private List<Teaching> teachings;
 
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "englishDependent_id")
+    private EnglishDependent englishDependent;
+
+
+
     public String getMiddlename() {
         return middlename;
     }
@@ -153,6 +160,14 @@ public class APP_User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles;
 
+    }
+
+    public EnglishDependent getEnglishDependent() {
+        return englishDependent;
+    }
+
+    public void setEnglishDependent(EnglishDependent englishDependent) {
+        this.englishDependent = englishDependent;
     }
 
     public String getPassword() {
