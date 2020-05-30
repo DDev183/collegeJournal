@@ -1,400 +1,646 @@
 package page.danya.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import page.danya.config.WebSecurityConfig;
+import page.danya.DTO.EnglishDependentDTO;
+import page.danya.DTO.findByLastAndFirst;
 import page.danya.models.*;
 import page.danya.repository.*;
+import page.danya.security.jwt.JwtTokenProvider;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-@Controller
+@RestController
+@CrossOrigin()    //VERY VERY IMPORTANT THINGS!!!!
+@RequestMapping(value = "/api/admin")
 public class AdminController {
 
-    @Autowired
-    private GroupRepository groupRepository;
 
     @Autowired
     private APP_UserRepository userRepository;
 
     @Autowired
-    private SubjectRepository subjectRepository;
+    private TeachingRepository teachingRepository;
+
+    @Autowired
+    private GroupRepository groupRepository;
+
+    @Autowired
+    JwtTokenProvider jwtTokenProvider;
 
     @Autowired
     private RoleRepository roleRepository;
 
     @Autowired
-    private TeachingRepository teachingRepository;
+    private SubjectRepository subjectRepository;
 
     @Autowired
     private AbsentRepository absentRepository;
 
     @Autowired
-    private WebSecurityConfig webSecurityConfig;
+    private EnglishRepository englishRepository;
 
 
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/init", produces = "application/json")
+    public ResponseEntity init(@RequestHeader("Authorization") String token){
+        token = token.substring(7, token.length());
 
-    //CONSTANTs
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
 
-    final static String BAN_TEXT = "Блокировка";
-    final static String UNBAN_TEXT = "Разблокировка";
+        if (role.equals(RegisterController.ROLE_ADMIN)){
 
-
-
-    @GetMapping("/admin/createGroup")
-    public String getCreateGroup(Model model){
-        model.addAttribute("createGroupForm", new Group());
-        initAbsent();
-
-
-        return "admin/createGroup";
-    }
-
-
-    @PostMapping("/admin/createGroup")
-    public String addGroup(@ModelAttribute(name = "createGroupForm") Group groupInfo, Model model){
-
-        Group group = new Group();
-        group.setName(groupInfo.getName());
-
-        group = groupRepository.save(group);
-
-        return "admin";
-    }
-
-
-    @GetMapping("/admin/addStudentToGroup")
-    public String getAddStudentToGroup(String lastname, String firstname, Model model){
-
-        model.addAttribute("lastname", lastname);
-        model.addAttribute("firstname", firstname);
-
-        return "admin/addStudentToGroup";
-
-    }
-
-    @PostMapping("/admin/addStudentToGroup")
-    public String findAddStudentToGroup(@RequestParam String firstname, @RequestParam String lastname, Model model){
-
-
-        Optional<APP_User> user = userRepository.findByFirstnameAndLastname(firstname, lastname);
-        APP_User userInfo = user.get();
-
-        System.out.println(userInfo.toString());
-        System.out.println(userInfo.getGroup().getName());
-
-
-        List<Group> groups = groupRepository.findAll();
-
-//        model.addAttribute("user", userInfo);
-        model.addAttribute("id", userInfo.getId());
-        model.addAttribute("firstname", userInfo.getFirstname());
-        model.addAttribute("lastname", userInfo.getLastname());
-        model.addAttribute("middlename", userInfo.getMiddlename());
-
-        model.addAttribute("groups", groups);
-
-
-
-        return "admin/addStudentToGroup";
-    }
-
-
-
-    @PostMapping("/admin/addStudentToGroup/link")
-    public String addStudentToGroup(@RequestParam(name = "groupid") int groupid, @RequestParam(name = "id") int id, Model model){
-
-
-        System.out.println("User id: " + id);
-        System.out.println("Group id: " + groupid);
-        System.out.println("EKEKEKEKEKEKEKEKE");
-
-        Group group = groupRepository.findById(groupid).get();
-
-        APP_User user = userRepository.findById(id).get();
-        user.setGroup(group);
-
-        userRepository.save(user);
-
-        return "redirect:/admin";
-    }
-
-    @GetMapping("/admin/createSubject")
-    public String createSubject(Model model){
-
-
-        model.addAttribute("createSubjectForm", new Subject());
-        return "/admin/createSubject";
-    }
-
-    @PostMapping("/admin/createSubject")
-    public String createSubjectForm(@ModelAttribute(name = "createSubjectForm") Subject subjectInfo, Model model){
-
-        Subject subject = new Subject(subjectInfo.getName());
-
-        subject = subjectRepository.save(subject);
-
-        return "/admin";
-    }
-
-
-
-//    @GetMapping("/admin/subjectLinking")
-//    public String getPageSubjectLinking(Model model){
-//
-//
-//        return "/admin/subjectLinking";
-//    }
-
-
-
-
-    @GetMapping("/admin/changeRole")
-    public String getChangeRole(String firstname, String lastname, String middlename, Model model){
-
-        model.addAttribute("firstname", firstname);
-        model.addAttribute("lastname", lastname);
-        model.addAttribute("middlename", middlename);
-
-        return "admin/changeRole";
-    }
-
-    @PostMapping("/admin/changeRole")
-    public String changeRole(@RequestParam String firstname, @RequestParam String lastname, @RequestParam String middlename, Model model){
-
-
-        APP_User user = userRepository.findByFirstnameAndLastnameAndMiddlename(firstname, lastname, middlename).get();
-
-        model.addAttribute("id", user.getId());
-        model.addAttribute("firstname", user.getFirstname());
-        model.addAttribute("lastname", user.getLastname());
-        model.addAttribute("middlename", user.getMiddlename());
-
-        List<String> roles = new LinkedList<>();
-        roles.add("USER");
-        roles.add("TEACHER");
-        roles.add("ADMIN");
-
-        model.addAttribute("roles", roles);
-
-        return "admin/changeRole";
-    }
-
-
-    @PostMapping("admin/changeRole/change")
-    public String changingRole(@ModelAttribute(name = "rolevalue") String roles, @RequestParam(name = "id") int id, Model model){
-
-        System.out.println("Role: " + roles);
-        System.out.println("User id: " + id);
-
-        APP_User user = userRepository.findById(id).get();
-
-
-        System.out.println(user.toString());
-
-//        user.setRoles(Collections.singleton(Role.USER));
-
-        String roleString = "ROLE_" + roles;
-
-        List<Role> rolesList = roleRepository.findByName(roleString);
-        user.setRole(rolesList);
-
-        userRepository.save(user);
-
-        System.out.println(user.toString());
-
-
-        return "/admin";
-    }
-
-
-    @GetMapping("/admin/subjectLinking")
-    public String getSubjectLinkingPage(String groupNumber, String subjectName, Model model){
-
-        model.addAttribute("groupNumber", groupNumber);
-        model.addAttribute("subjectName", subjectName);
-
-        return "/admin/subjectLinking";
-    }
-
-    @PostMapping("/admin/subjectLinking")
-    public String subjectLinkingPage(@RequestParam String groupNumber, String subjectName, Model model){
-
-        Group group = groupRepository.findByName(groupNumber).get();
-
-        List<Subject> subject = subjectRepository.findAll();   //Get all subjects from db
-        List<Subject> goodSubject = new ArrayList<>();   //Create list for subject who store part of group name
-
-        for(int i = 0; i != subject.size(); i++){
-            if (subject.get(i).getName().contains(subjectName)){
-                goodSubject.add(subject.get(i));
+            if (!absentRepository.findByShortname("НБ").isPresent()){
+                Absent absent = new Absent("Отсутствует", "НБ");
+                absentRepository.save(absent);
             }
-        }
-
-//        List<APP_User> goodTeachers = userRepository.findByRole(new Role(RegisterController.ROLE_TEACHER));
-        List<APP_User> teachers = userRepository.findAll();
-        List<APP_User> goodTeachers = new ArrayList<>();
-
-
-        //MODIFIED VERSION!!!!
-
-
-        for(int i = 0; i != teachers.size(); i++){
-            Iterator<Role> roleList = teachers.get(i).getRole().listIterator();
-            while (roleList.hasNext()) {
-                if (roleList.next().getName().equalsIgnoreCase(RegisterController.ROLE_TEACHER)) {
-                    goodTeachers.add(teachers.get(i));
-                }
+            if (!absentRepository.findByShortname("УП").isPresent()){
+                Absent absent = new Absent("Уважительный пропуск", "УП");
+                absentRepository.save(absent);
             }
-        }
+            if (!absentRepository.findByShortname("НП").isPresent()){
+                Absent absent = new Absent("Неуважительный пропуск", "НП");
+                absentRepository.save(absent);
+            }
+            if (!absentRepository.findByName("Присутствует").isPresent()){
+                Absent absent = new Absent("Присутствует", " ");
+                absentRepository.save(absent);
+            }
+            if (!englishRepository.findById(10).isPresent()){  //Default englishDependent
+                EnglishDependent englishDependent = new EnglishDependent(10);
+                englishRepository.save(englishDependent);
+            }
 
-
-        model.addAttribute("groupNumber", group.getName());
-        model.addAttribute("goodSubject", goodSubject);
-        model.addAttribute("teachers", goodTeachers);
-
-
-
-        return "/admin/subjectLinking";
-    }
-
-
-    @PostMapping("/admin/subjectLinking/link")
-    public String subjectLinking(Model model, @RequestParam(name = "groupNumber") String groupNumber, @RequestParam String goodSubject, @RequestParam(name = "teachers") String goodTeachers){
-
-
-        System.out.println("Group number: " + groupNumber + "\nSubject: " + goodSubject + "\nTeacher: " + goodTeachers);
-//        teachingRepository.save(new Teaching(groupRepository.findByName(groupNumber).get(), subjectRepository.findById(Integer.parseInt(goodSubject)).get(), userRepository.findById(goodTeachers).get()));
-
-
-        return "/admin";
-    }
+            if (!groupRepository.findById(10).isPresent()){
+                groupRepository.save(new Group(10, "Default group"));
+            }
 
 
 
-    @GetMapping("/admin/banUser")
-    public String getBanPage(Model model, String firstname, String lastname, String mediumname){
-
-        model.addAttribute("firstname", firstname);
-        model.addAttribute("lastname", lastname);
-        model.addAttribute("mediumname", mediumname);
-
-        return "/admin/banUser";
-    }
-
-    @PostMapping("/admin/banUser")
-    public String banUser(Model model, String firstname, String lastname, String mediumname){
-
-
-        APP_User user = userRepository.findByFirstnameAndLastnameAndMiddlename(firstname, lastname, mediumname).get();
-
-        model.addAttribute("id", user.getId());
-        model.addAttribute("firstname", firstname);
-        model.addAttribute("lastname", lastname);
-        model.addAttribute("mediumname", mediumname);
-
-
-        String banstateF;
-
-        if(user.isBanstate()){
-            banstateF = BAN_TEXT;
-        }else {
-            banstateF = UNBAN_TEXT;
-        }
-
-        model.addAttribute("banstateF", banstateF);
-
-        List<String> banstate = new ArrayList<String>();
-        banstate.add(BAN_TEXT);
-        banstate.add(UNBAN_TEXT);
-
-        model.addAttribute("banstate", banstate);
-
-
-
-        return "/admin/banUser";
-    }
-
-    @PostMapping("/admin/banUser/confirm")
-    public String confirmBanState(Model model, @RequestParam(name = "id") int id, @RequestParam(name = "banstate") String banstate){
-
-        APP_User user = userRepository.findById(id).get();
-
-        System.out.println("Receive: " + banstate);
-
-        if (banstate.equalsIgnoreCase(BAN_TEXT)){
-            user.setBanstate(true);
-        } else if (banstate.equalsIgnoreCase(UNBAN_TEXT)){
-            user.setBanstate(false);
+            return ResponseEntity.ok().build();
         } else {
-            System.out.println("ERROR: Text from frontend did't response!");
+            return ResponseEntity.status(403).build();
+
         }
 
-        System.out.println("Ban: " + user.isBanstate());
-        user = userRepository.save(user);
-
-        //TODO: Сделать реализацию проверки на блокировку при авторизации в системе!
-
-        return "/admin";
-    }
-
-    @GetMapping("/admin/changerUserInfoByLogin")
-    private String getChangerUserInfoByLoginPage(Model model){
-
-
-
-        return "/admin/changerUserInfoByLogin";
-    }
-
-    @PostMapping("/admin/changerUserInfoMain")
-    private String changerUserInfoByLoginPage(Model model, String username){
-
-        APP_User user = userRepository.findByUsername(username).get();
-
-        System.out.println(user.toString());
-
-        model.addAttribute("user", user);
-
-        return "/admin/changerUserInfoMain";
     }
 
 
-    @PostMapping("/admin/changerUserInfoMain/confirm")
-    private String changeUserInfoMyConfirm(Model model, @ModelAttribute(name = "changeUserInfo") APP_User user, @RequestParam(name = "id") int id){
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/createGroup", produces = "application/json")
+    public ResponseEntity createGroup(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body){
+        token = token.substring(7, token.length());
+        System.out.println(body.get("Group"));
+        String group = body.get("Group");
 
-        System.out.println(user.toString());
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
 
-        APP_User currectUser = userRepository.findById(id).get();
+        if (role.equals(RegisterController.ROLE_ADMIN)){
 
-        currectUser.setFirstname(user.getFirstname());
-        currectUser.setLastname(user.getLastname());
-        currectUser.setMiddlename(user.getMiddlename());
-        currectUser.setUsername(user.getUsername());
-        currectUser.setTelnumber(user.getTelnumber());
-        currectUser.setEmail(user.getEmail());
+            if (groupRepository.findByName(group).isPresent()){
+                return ResponseEntity.status(400).build();
+            }
 
-        System.out.println(user.getPassword());
-//        if (user.getPassword()){
-//            currectUser.setPassword(webSecurityConfig.passwordEncoder().encode(user.getPassword()));
-//        }
-
-        userRepository.save(currectUser);
-
-        return "/admin";
-     }
+            groupRepository.save(new Group(group));
 
 
-    public void initAbsent(){
-        if(!absentRepository.findByShortname("НБ").isPresent()){
-            absentRepository.save(new Absent("Присутсвует", " "));
-            absentRepository.save(new Absent("Отсутсвует", "НБ"));
-            absentRepository.save(new Absent("Уважительный допуск", "УД"));
-            absentRepository.save(new Absent("Неуважительный допуск", "НД"));
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+
+
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/getAllLastname", produces = "application/json")
+    public ResponseEntity getAllLastname(@RequestHeader("Authorization") String token){
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (role.equals(RegisterController.ROLE_ADMIN)) {
+
+
+            List<APP_User> users = userRepository.findAll();
+
+
+            List<String> result = new ArrayList<>();
+
+            users.forEach(userF -> result.add(userF.getLastname()));
+
+//            System.out.println(result.toArray().toString());
+
+
+            return ResponseEntity.ok(result);
+
+        } else {
+            return ResponseEntity.status(403).build();
         }
     }
 
+
+
+
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/getAllFirstname", produces = "application/json")
+    public ResponseEntity getAllFirstname(@RequestHeader("Authorization") String token){
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (role.equals(RegisterController.ROLE_ADMIN)) {
+
+
+            List<APP_User> users = userRepository.findAll();
+
+            List<String> result = new ArrayList<>();
+
+            users.forEach(userF -> result.add(userF.getFirstname()));
+
+//            System.out.println(result.toArray().toString());
+
+
+            return ResponseEntity.ok(result);
+
+        } else {
+            return ResponseEntity.status(403).build();
+        }
+    }
+
+
+
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/getAllMiddlename", produces = "application/json")
+    public ResponseEntity getAllMiddlename(@RequestHeader("Authorization") String token){
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (role.equals(RegisterController.ROLE_ADMIN)) {
+
+
+            List<APP_User> users = userRepository.findAll();
+
+            List<String> result = new ArrayList<>();
+
+            users.forEach(userF -> {
+                //TODO: Renove dublicates!!!
+                result.add(userF.getMiddlename());
+
+            });
+
+//            System.out.println(result.toArray().toString());
+
+
+            return ResponseEntity.ok(result);
+
+        } else {
+            return ResponseEntity.status(403).build();
+        }
+    }
+
+
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/getUserByLastnameAndFirstname", produces = "application/json")
+    public ResponseEntity getUserByLastnameAndFirstname(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body){
+        token = token.substring(7, token.length());
+//        System.out.println(body.get("Group"));
+        String firstname = body.get("Firstname");
+        String lastname = body.get("Lastname");
+
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (role.equals(RegisterController.ROLE_ADMIN)){
+
+
+//            Map<Integer, findByLastAndFirst> users = new HashMap<>();
+//
+//            userRepository.findByFirstnameAndLastname(firstname, lastname).forEach(user -> {
+//
+//                int i = 0;
+//                findByLastAndFirst userF = new findByLastAndFirst(user.getId(), user.getFirstname(), user.getLastname(), user.getMiddlename(), user.getGroup().getName(), user.getUsername());
+//
+//                users.put(i++, userF);
+//
+//            });
+
+            List<findByLastAndFirst> users = new ArrayList<>();
+
+            userRepository.findByFirstnameAndLastname(firstname, lastname).forEach(
+                    user -> {
+                        users.add(new findByLastAndFirst(user.getId(), user.getFirstname(), user.getLastname(), user.getMiddlename(), user.getGroup().getName(), user.getUsername(), user.getRole().get(0).getName()));
+                    }
+            );
+
+
+            return ResponseEntity.ok(users);
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/getAllGroups", produces = "application/json")
+    public ResponseEntity getAllGroups(@RequestHeader("Authorization") String token) {
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+
+        if (role.equals(RegisterController.ROLE_ADMIN)) {
+
+            List<String> res = new ArrayList<>();
+
+            groupRepository.findAll().forEach(group -> {
+                res.add(group.getName());
+            });
+
+
+            return ResponseEntity.ok(res);
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+    }
+
+
+
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/linkStudentWithGroup", produces = "application/json")
+    public ResponseEntity linkStudentWithGroup(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body){
+        token = token.substring(7, token.length());
+//        System.out.println(body.get("Group"));
+        String userId = body.get("userId");
+        String groupName = body.get("group");
+
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (role.equals(RegisterController.ROLE_ADMIN)){
+
+
+            APP_User user = userRepository.findById(Integer.parseInt(userId)).get();
+
+            Group group = groupRepository.findByName(groupName).get();
+            user.setGroup(group);
+
+            userRepository.save(user);
+
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/createSubject", produces = "application/json")
+    public ResponseEntity createSubject(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body){
+        token = token.substring(7, token.length());
+//        System.out.println(body.get("Group"));
+        String subjectName = body.get("subject");
+
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (role.equals(RegisterController.ROLE_ADMIN)){
+
+
+            if (subjectRepository.findByName(subjectName).isPresent()){
+                ResponseEntity.status(400).build();
+            }
+
+
+            Subject subject = new Subject(subjectName);
+
+            subjectRepository.save(subject);
+
+
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/getAllRoles", produces = "application/json")
+    public ResponseEntity getAllRoles(@RequestHeader("Authorization") String token) {
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+
+        if (userRole.equals(RegisterController.ROLE_ADMIN)) {
+
+            List<String> res = new ArrayList<>();
+
+            roleRepository.findAll().forEach(role -> {
+                res.add(role.getName());
+            });
+
+
+            return ResponseEntity.ok(res);
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+    }
+
+
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/changeRole", produces = "application/json")
+    public ResponseEntity changeRole(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body){
+        token = token.substring(7, token.length());
+//        System.out.println(body.get("Group"));
+        String userId = body.get("userId");
+        String roleName = body.get("role");
+
+
+        String username = jwtTokenProvider.getUsername(token);
+        String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (userRole.equals(RegisterController.ROLE_ADMIN)){
+
+
+            APP_User user = userRepository.findById(Integer.parseInt(userId)).get();
+
+            List<Role> role = roleRepository.findByName(roleName);
+            user.setRole(role);
+
+            userRepository.save(user);
+
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/getAllSubjects", produces = "application/json")
+    public ResponseEntity getAllSubjects(@RequestHeader("Authorization") String token) {
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+
+        if (userRole.equals(RegisterController.ROLE_ADMIN)) {
+
+            List<String> res = new ArrayList<>();
+
+            subjectRepository.findAll().forEach(subject -> {
+                res.add(subject.getName());
+            });
+
+
+            return ResponseEntity.ok(res);
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+    }
+
+
+    @CrossOrigin(methods = RequestMethod.GET)
+    @GetMapping(value = "/getAllTeachers", produces = "application/json")
+    public ResponseEntity getAllTeachers(@RequestHeader("Authorization") String token) {
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+
+        if (userRole.equals(RegisterController.ROLE_ADMIN)) {
+
+            List<String> res = new ArrayList<>();
+
+            Role role = roleRepository.findByName(RegisterController.ROLE_TEACHER).get(0);
+
+            userRepository.findByRoles(role).forEach(user -> {
+                res.add(user.getLastname() + " " + user.getFirstname());
+            });
+
+
+            return ResponseEntity.ok(res);
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+    }
+
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/linkTSG", produces = "application/json")
+    public ResponseEntity linkTSG(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body){
+        token = token.substring(7, token.length());
+//        System.out.println(body.get("Group"));
+        String subjectName = body.get("subject");
+        String groupName = body.get("group");
+        String teacherLastAndFirstname = body.get("teacher");
+
+        Subject subject = subjectRepository.findByName(subjectName).get();
+        Group group = groupRepository.findByName(groupName).get();
+        String[] array = teacherLastAndFirstname.split(" ");
+        String lastname = array[0];
+        String firstname = array[1];
+
+        APP_User teacher = userRepository.findByFirstnameAndLastnameAndRoles(firstname, lastname, roleRepository.findByName(RegisterController.ROLE_TEACHER).get(0)).get();
+
+
+
+
+
+
+        String username = jwtTokenProvider.getUsername(token);
+        String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        if (userRole.equals(RegisterController.ROLE_ADMIN)){
+
+            teachingRepository.save(new Teaching(group, subject, teacher));
+
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+
+    @CrossOrigin( methods = RequestMethod.GET)
+    @GetMapping(value = "/getsStudentsFromGroup", produces = "application/json")
+    public ResponseEntity getStudentsFromGroupGet(@RequestHeader("Authorization") String token, @RequestParam String group, @RequestParam String teacher, @RequestParam String subject){
+        token = token.substring(7, token.length());
+//        System.out.println(body.get("Group"));
+
+        System.out.println(group + "\n" + teacher + "\n" + subject);
+
+
+
+        Group thisGroup = groupRepository.findByName(group).get();
+        Subject thisSubject = subjectRepository.findByName(subject).get();
+
+        String[] array = teacher.split(" ");
+        APP_User thisTeacher = userRepository.findByFirstnameAndLastnameAndRoles(array[1], array[0], roleRepository.findByName(RegisterController.ROLE_TEACHER).get(0)).get();
+
+
+
+        String username = jwtTokenProvider.getUsername(token);
+        String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+
+        if (userRole.equals(RegisterController.ROLE_ADMIN)){
+
+
+            if (!englishRepository.findByGroupAndSubjectAndTeacher(thisGroup, thisSubject, thisTeacher).isPresent()){
+                englishRepository.save(new EnglishDependent(thisTeacher, thisSubject, thisGroup));
+            }
+
+            EnglishDependent englishDependent = englishRepository.findByGroupAndSubjectAndTeacher(thisGroup, thisSubject, thisTeacher).get();
+            List<APP_User> studentsList = userRepository.findByGroup(englishDependent.getGroup());
+
+            List<APP_User> students = userRepository.findByGroup(thisGroup);
+            List<String> studentsName = new ArrayList<>();
+            List<String> value = new ArrayList<>();
+
+            students.stream().forEach(e -> {
+                AtomicBoolean flag = new AtomicBoolean(false);
+                studentsName.add(e.getLastname() + " " + e.getFirstname());
+                studentsList.stream().forEach(k -> {
+                    if (k.getId() == e.getId()){
+                        flag.set(true);
+                        value.add("+");
+                    }
+                });
+
+                if (flag.get() == false) value.add(" ");
+            });
+
+            EnglishDependentDTO dto = new EnglishDependentDTO();
+            dto.setStudents(studentsName);
+            dto.setValue(value);
+
+
+
+
+
+
+
+            return ResponseEntity.ok(dto);
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
+
+
+
+    @CrossOrigin( methods = RequestMethod.POST)
+    @PostMapping(value = "/englishDependent", produces = "application/json")
+    public ResponseEntity englishDependent(@RequestHeader("Authorization") String token, @RequestBody EnglishDependentDTO dto) throws InterruptedException {
+        token = token.substring(7, token.length());
+
+        String username = jwtTokenProvider.getUsername(token);
+        String role = userRepository.findByUsername(username).get().getRole().get(0).getName();
+
+        Group thisGroup = groupRepository.findByName(dto.getGroup()).get();
+        Subject thisSubject = subjectRepository.findByName(dto.getSubject()).get();
+        APP_User thisTeacher = userRepository.findByUsername(username).get();
+
+
+        if (role.equals(RegisterController.ROLE_ADMIN)){
+
+
+            if (!englishRepository.findByGroupAndSubjectAndTeacher(thisGroup, thisSubject, thisTeacher).isPresent()){
+                englishRepository.save(new EnglishDependent(thisTeacher, thisSubject, thisGroup));
+            }
+
+                EnglishDependent englishDependent = englishRepository.findByGroupAndSubjectAndTeacher(thisGroup, thisSubject, thisTeacher).get();
+                EnglishDependent defaultEnglishDependent = englishRepository.findById(10).get();
+//                englishRepository.delete(englishDependent);
+
+
+
+            List<String> students = dto.getStudents();
+                List<String> values = dto.getValue();
+
+                List<APP_User> studentsList = new ArrayList<>();
+
+                Map<String, String> map = IntStream.range(0, students.size())
+                        .boxed()
+                        .collect(Collectors.toMap(i -> students.get(i), i -> values.get(i)));
+
+
+                map.entrySet().stream()
+                        .filter(e -> e.getValue().equalsIgnoreCase("+"))
+                        .forEach(e -> {
+                        String[] array = e.getKey().split(" ");
+                            System.out.println(array[0]);
+                            APP_User student = userRepository.findByLastnameAndFirstnameAndGroup(array[0], array[1], thisGroup).get();
+                        studentsList.add(student);
+                        student.setEnglishDependent(englishDependent);
+                        userRepository.save(student);
+                });
+
+            map.entrySet().stream()
+                    .filter(e -> e.getValue().equalsIgnoreCase(" "))
+                    .forEach(e -> {
+                        String[] array = e.getKey().split(" ");
+                        System.out.println(array[0]);
+                        APP_User student = userRepository.findByLastnameAndFirstnameAndGroup(array[0], array[1], thisGroup).get();
+                        studentsList.add(student);
+                        student.setEnglishDependent(defaultEnglishDependent);
+                        userRepository.save(student);
+                    });
+
+//                englishDependent.setStudents(studentsList);
+//                System.out.println(englishDependent.getStudents().size());
+//
+//                englishRepository.saveAndFlush(englishDependent);
+
+
+
+
+
+                return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(403).build();
+
+        }
+
+    }
 
 
 }

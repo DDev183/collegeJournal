@@ -1,6 +1,7 @@
 package page.danya.models;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
@@ -20,8 +21,14 @@ public class Subject {
 
     private String name;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "subject")
     private List<Teaching> teachings;
+
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "subject")
+    private List<EnglishDependent> englishDependents;
 
     public Subject(){
     }

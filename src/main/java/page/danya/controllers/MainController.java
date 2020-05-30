@@ -12,9 +12,7 @@ import page.danya.models.APP_User;
 import page.danya.repository.APP_UserRepository;
 import page.danya.security.jwt.JwtTokenProvider;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @CrossOrigin    //VERY VERY IMPORTANT THINGS!!!!
@@ -29,7 +27,7 @@ public class MainController {
     JwtTokenProvider jwtTokenProvider;
 
 
-    @CrossOrigin(origins = "http://localhost:3000")
+    @CrossOrigin(methods = RequestMethod.GET)
     @GetMapping(value = "/profile", produces = "application/json")
     public ResponseEntity profile(@RequestHeader("Authorization") String token){
         token = token.substring(7, token.length());
@@ -43,7 +41,15 @@ public class MainController {
         dto = dto.fromUser(user);
 
 
+
+
         return ResponseEntity.ok(dto);
     }
+
+
+
+
+
+
 
 }
