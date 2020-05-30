@@ -17,6 +17,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+
+//TODO: Set everywhere the CrossOrgiin address!!!
 @RestController
 @CrossOrigin()    //VERY VERY IMPORTANT THINGS!!!!
 @RequestMapping("/api/teacher")
@@ -459,6 +461,7 @@ public class TeacherController {
         String subjectName = body.getSubject();
         String groupName = body.getGroup();
         Group group = groupRepository.findByName(groupName).get();
+        System.out.println("HELP123");
         System.out.println(groupName);
         System.out.println(subjectName);
         System.out.println(body.getDate());
@@ -480,9 +483,9 @@ public class TeacherController {
 
             //TODO: Be important to English lessons
 
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+            LocalDate date = LocalDate.parse(body.getDate(), dateFormatter);
 
-            LocalDate date = body.getDate();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM.dd");
             Teaching teaching = teachingRepository.findByTeacherAndGroup(userRepository.findByUsername(username).get(), group).get(0);
 
             Lesson lesson = lessonRepository.findByTeachingAndDate(teaching, date).get();
@@ -496,6 +499,7 @@ public class TeacherController {
                         APP_User student = userRepository.findByLastnameAndFirstnameAndGroup(lastname, firstname, group).get();
                         Mark mark = markRepository.findByLessonAndStudent(lesson, student).get();
 
+                        //TODO: Make field lastChanging
                         mark.setDate(LocalDate.now());
                         mark.setTime(LocalTime.now());
                         mark.setValue(Integer.parseInt(e.getValue()));

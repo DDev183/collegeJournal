@@ -9,16 +9,16 @@ import java.util.Set;
 public class AllMarksDTO {
 
     List<String> subjects;
-    List<LocalDate> dates;
+    List<String> dates;
     List<List <String>> marks;
     List<List<String>> absents;
-    LocalDate startDate;
-    LocalDate endDate;
+    String startDate;
+    String endDate;
 
     public AllMarksDTO() {
     }
 
-    public AllMarksDTO(List<String> subjects, List<LocalDate> dates, List<List<String>> marks, List<List<String>> absents, LocalDate startDate, LocalDate endDate) {
+    public AllMarksDTO(List<String> subjects, List<String> dates, List<List<String>> marks, List<List<String>> absents, String startDate, String endDate) {
         this.subjects = subjects;
         this.dates = dates;
         this.marks = marks;
@@ -35,11 +35,11 @@ public class AllMarksDTO {
         this.subjects = subjects;
     }
 
-    public List<LocalDate> getDates() {
+    public List<String> getDates() {
         return dates;
     }
 
-    public void setDates(List<LocalDate> dates) {
+    public void setDates(List<String> dates) {
         this.dates = dates;
     }
 
@@ -59,19 +59,19 @@ public class AllMarksDTO {
         this.absents = absents;
     }
 
-    public LocalDate getStartDate() {
+    public String getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDate startDate) {
+    public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDate getEndDate() {
+    public String getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
 }

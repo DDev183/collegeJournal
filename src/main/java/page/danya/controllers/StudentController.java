@@ -1,5 +1,6 @@
 package page.danya.controllers;
 
+import jdk.vm.ci.meta.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,6 +58,7 @@ public class StudentController {
         token = token.substring(7, token.length());
 
 
+
         String username = jwtTokenProvider.getUsername(token);
         String userRole = userRepository.findByUsername(username).get().getRole().get(0).getName();
 
@@ -105,8 +107,16 @@ public class StudentController {
 
     @CrossOrigin( methods = RequestMethod.GET)
     @GetMapping(value = "/getAllMarks", produces = "application/json")
-    public ResponseEntity getAllMarks(@RequestHeader("Authorization") String token) {
+    public ResponseEntity getAllMarks(@RequestHeader("Authorization") String token, @RequestParam String startDate, @RequestParam String endDate) {
         token = token.substring(7, token.length());
+
+        boolean flag;
+
+        if (startDate.equalsIgnoreCase("null") || endDate.equalsIgnoreCase("null")){
+            flag = true;
+        } else {
+            flag = false;
+        }
 
 
         String username = jwtTokenProvider.getUsername(token);
@@ -119,12 +129,14 @@ public class StudentController {
 
 
 
+
             AllMarksDTO dto = new AllMarksDTO();
             List<LocalDate> dates = new ArrayList<>();
             List<Subject> subjects = new ArrayList<>();
             List<String> stringSubjects = new ArrayList<>();
             List<List<String>> finalMarks = new ArrayList<>();
             List<List<String>> finalAbsents = new ArrayList<>();
+            List<String> finalDates = new ArrayList<>();
 
             APP_User student = userRepository.findByUsername(username).get();
 
@@ -146,10 +158,44 @@ public class StudentController {
             List<Mark> marks = markRepository.findByStudent(student);
 
 
-            marks.stream().forEach(
+
+            marks.stream().filter(
                     mark -> {
                         LocalDate date = mark.getDate();
-                        dates.add(date);
+
+                        if (flag == false) {
+                            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                            System.out.println(startDate);
+                            LocalDate startDateField = LocalDate.parse(startDate, dateTimeFormatter);
+                            LocalDate endDateField = LocalDate.parse(endDate, dateTimeFormatter);
+                            System.out.println("HELP!!!");
+
+                            System.out.println(date.compareTo(startDateField));
+                            System.out.println(date.compareTo(endDateField));
+
+                            boolean res1 = date.compareTo(startDateField) >= 0;
+                            boolean res2 = date.compareTo(endDateField) <= 0;
+
+                            if (res1 && res2) {
+                                System.out.println();
+                                dates.add(date);
+                                finalDates.add(date.format(dateFormatter));
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        } else {
+                            dates.add(date);
+                            finalDates.add(date.format(dateFormatter));
+                            return true;
+                        }
+                    }
+            ).forEach(
+                    mark -> {
+                        LocalDate date = mark.getDate();
+
+
+
 
                         List<String> markListForExport = new ArrayList<>();
                         List<String> absentListForExport = new ArrayList<>();
@@ -196,16 +242,20 @@ public class StudentController {
 
 
             //TODO: Need to reverse dates!!!
-            dto.setDates(dates);
+            dto.setDates(finalDates);
             dto.setAbsents(finalAbsents);
             dto.setSubjects(stringSubjects);
             dto.setMarks(finalMarks);
 
 
 
+
             //TODO: Maybe work incorrectly
-            System.out.println("StartDate: " + dates.get(0).format(dateFormatter));
-            System.out.println("EndDate: " + dates.get(dates.size() - 1).format(dateFormatter));
+            DateTimeFormatter dateFormatterSpec = DateTimeFormatter.ofPattern("YYYY.MM.dd");
+            System.out.println("StartDate: " + dates.get(0).format(dateFormatterSpec));
+            dto.setStartDate(dates.get(0).format(dateFormatterSpec));
+            System.out.println("EndDate: " + dates.get(dates.size() - 1).format(dateFormatterSpec));
+            dto.setEndDate(dates.get(dates.size() - 1).format(dateFormatterSpec));
 
 
 
